@@ -16,6 +16,7 @@ import PauseModal from './components/Modals/PauseModal';
 import AmbientBubbles from './components/AmbientBackground/AmbientBubbles';
 import SettingsModal from './components/Settings/SettingsModal';
 import HelpModal from './components/Help/HelpModal';
+import DailyChallengeModal from './components/DailyChallenge/DailyChallengeModal';
 
 import { getLevelDefinition, TOTAL_PRIMARY_LEVELS } from './data/levels/levelRegistry';
 import { checkObjectiveCompletion, calculateStars } from './game/objectiveManager';
@@ -43,7 +44,10 @@ import {
   RotateCcw,
   RefreshCw,
   HelpCircle,
-  Settings
+  Settings,
+  Calendar,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function App() {
@@ -105,9 +109,66 @@ export default function App() {
   const [isPauseOpen, setIsPauseOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isDailyChallengeOpen, setIsDailyChallengeOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hintMessage, setHintMessage] = useState(null);
 
-  // Sync profile on mount
+  // HTML5 History Routing Synchronization (Section 76)
+  const syncRouteFromPath = (path) => {
+    const clean = path.toLowerCase().replace(/\/$/, '') || '/';
+
+    // Close overlays
+    setIsAuthOpen(false);
+    setIsDashboardOpen(false);
+    setIsLeaderboardOpen(false);
+    setIsAchievementsOpen(false);
+    setIsLevelSelectOpen(false);
+    setIsSettingsOpen(false);
+    setIsHelpOpen(false);
+    setIsDailyChallengeOpen(false);
+    setIsMobileMenuOpen(false);
+
+    if (clean === '/' || clean === '') {
+      setCurrentView('landing');
+    } else if (clean.startsWith('/game')) {
+      const match = clean.match(/\/game\/(\d+)/);
+      const lvl = match ? parseInt(match[1], 10) : 1;
+      loadLevel(lvl);
+    } else if (clean === '/login' || clean === '/register') {
+      setIsAuthOpen(true);
+    } else if (clean === '/dashboard' || clean === '/profile') {
+      setIsDashboardOpen(true);
+    } else if (clean === '/levels') {
+      setIsLevelSelectOpen(true);
+    } else if (clean === '/leaderboard') {
+      setIsLeaderboardOpen(true);
+    } else if (clean === '/achievements') {
+      setIsAchievementsOpen(true);
+    } else if (clean === '/settings') {
+      setIsSettingsOpen(true);
+    } else if (clean === '/help') {
+      setIsHelpOpen(true);
+    } else if (clean === '/daily-challenge') {
+      setIsDailyChallengeOpen(true);
+    }
+  };
+
+  const navigateTo = (path) => {
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, '', path);
+    }
+    syncRouteFromPath(path);
+  };
+
+  const closeModal = (setter) => {
+    setter(false);
+    const fallbackPath = currentView === 'game' ? `/game/${levelNumber}` : '/';
+    if (window.location.pathname !== fallbackPath) {
+      window.history.pushState(null, '', fallbackPath);
+    }
+  };
+
+  // Sync profile and handle browser routing on mount
   useEffect(() => {
     async function syncProfile() {
       const me = await authService.getMe();
@@ -120,11 +181,21 @@ export default function App() {
       }
     }
     syncProfile();
+
+    // Initial path sync
+    syncRouteFromPath(window.location.pathname);
+
+    // Browser back/forward navigation support
+    const handlePopState = () => {
+      syncRouteFromPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Initialize level
-  const loadLevel = async (num) => {
-    const config = getLevelDefinition(num);
+  const loadLevel = async (num, customConfig = null) => {
+    const config = customConfig || getLevelDefinition(typeof num === 'number' ? num : 1);
     setLevelNumber(num);
     setLevelConfig(config);
     setShotsRemaining(config.shots);
@@ -146,12 +217,20 @@ export default function App() {
     setIsLevelCompleteOpen(false);
     setIsLevelFailedOpen(false);
     setIsPauseOpen(false);
+    setIsDailyChallengeOpen(false);
     setHintMessage(null);
     setCurrentView('game');
 
-    const sessionRes = await gameService.startSession(num);
-    if (sessionRes && sessionRes.sessionToken) {
-      setSessionToken(sessionRes.sessionToken);
+    const routePath = typeof num === 'number' ? `/game/${num}` : '/game/1';
+    if (window.location.pathname !== routePath) {
+      window.history.pushState(null, '', routePath);
+    }
+
+    if (typeof num === 'number') {
+      const sessionRes = await gameService.startSession(num);
+      if (sessionRes && sessionRes.sessionToken) {
+        setSessionToken(sessionRes.sessionToken);
+      }
     }
   };
 
@@ -479,13 +558,13 @@ export default function App() {
           </div>
         )}
 
-        {/* Global Navigation Controls */}
-        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexShrink: 0 }}>
+        {/* Global Desktop Navigation Controls (Section 78) */}
+        <div className="desktop-nav-controls">
           {currentView === 'game' ? (
             <button
               onClick={() => {
                 audioManager.playButtonClick();
-                setCurrentView('landing');
+                navigateTo('/');
               }}
               className="cartoon-btn"
               style={{ padding: '0.3rem 0.55rem', fontSize: '0.78rem', background: '#334155', color: '#f8fafc' }}
@@ -509,7 +588,7 @@ export default function App() {
           <button
             onClick={() => {
               audioManager.playButtonClick();
-              setIsLevelSelectOpen(true);
+              navigateTo('/levels');
             }}
             className="cartoon-btn btn-cyan"
             style={{ padding: '0.3rem 0.55rem', fontSize: '0.78rem' }}
@@ -518,39 +597,48 @@ export default function App() {
             <Map size={14} /> Map
           </button>
 
-          {currentView !== 'game' && (
-            <>
-              <button
-                onClick={() => {
-                  audioManager.playButtonClick();
-                  setIsLeaderboardOpen(true);
-                }}
-                className="cartoon-btn btn-gold"
-                style={{ padding: '0.3rem 0.5rem' }}
-                title="Leaderboard"
-              >
-                <Trophy size={14} />
-              </button>
+          {/* Daily Challenge Button (Section 74) */}
+          <button
+            onClick={() => {
+              audioManager.playButtonClick();
+              navigateTo('/daily-challenge');
+            }}
+            className="cartoon-btn btn-ruby"
+            style={{ padding: '0.3rem 0.55rem', fontSize: '0.78rem' }}
+            title="Daily Challenge Quest"
+          >
+            <Calendar size={14} /> Daily
+          </button>
 
-              <button
-                onClick={() => {
-                  audioManager.playButtonClick();
-                  setIsAchievementsOpen(true);
-                }}
-                className="cartoon-btn btn-purple"
-                style={{ padding: '0.3rem 0.5rem' }}
-                title="Achievements"
-              >
-                <Award size={14} />
-              </button>
-            </>
-          )}
+          <button
+            onClick={() => {
+              audioManager.playButtonClick();
+              navigateTo('/leaderboard');
+            }}
+            className="cartoon-btn btn-gold"
+            style={{ padding: '0.3rem 0.5rem' }}
+            title="Leaderboard"
+          >
+            <Trophy size={14} />
+          </button>
+
+          <button
+            onClick={() => {
+              audioManager.playButtonClick();
+              navigateTo('/achievements');
+            }}
+            className="cartoon-btn btn-purple"
+            style={{ padding: '0.3rem 0.5rem' }}
+            title="Achievements"
+          >
+            <Award size={14} />
+          </button>
 
           {/* Help & Rules Button */}
           <button
             onClick={() => {
               audioManager.playButtonClick();
-              setIsHelpOpen(true);
+              navigateTo('/help');
             }}
             className="cartoon-btn btn-cyan"
             style={{ padding: '0.3rem 0.5rem' }}
@@ -563,7 +651,7 @@ export default function App() {
           <button
             onClick={() => {
               audioManager.playButtonClick();
-              setIsSettingsOpen(true);
+              navigateTo('/settings');
             }}
             className="cartoon-btn"
             style={{ padding: '0.3rem 0.5rem', background: '#334155' }}
@@ -605,8 +693,8 @@ export default function App() {
             <button
               onClick={() => {
                 audioManager.playButtonClick();
-                if (user) setIsDashboardOpen(true);
-                else setIsAuthOpen(true);
+                if (user) navigateTo('/dashboard');
+                else navigateTo('/login');
               }}
               className="cartoon-btn btn-emerald"
               style={{ padding: '0.3rem 0.65rem', fontSize: '0.78rem' }}
@@ -627,16 +715,176 @@ export default function App() {
             </button>
           )}
         </div>
+
+        {/* Mobile Navigation Toggle (Section 78) */}
+        <div className="mobile-nav-toggle" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <button
+            onClick={toggleSound}
+            className="cartoon-btn"
+            style={{ padding: '0.3rem 0.45rem', background: soundEnabled ? 'rgba(56, 189, 248, 0.25)' : '#334155' }}
+          >
+            {soundEnabled ? <Volume2 size={14} color="#38bdf8" /> : <VolumeX size={14} color="#94a3b8" />}
+          </button>
+
+          {currentView === 'game' && (
+            <button
+              onClick={() => {
+                audioManager.playButtonClick();
+                setIsPauseOpen(true);
+              }}
+              className="cartoon-btn"
+              style={{ padding: '0.3rem 0.45rem', background: '#334155', color: '#f8fafc' }}
+              title="Pause Game"
+            >
+              <Pause size={14} />
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              audioManager.playButtonClick();
+              setIsMobileMenuOpen(prev => !prev);
+            }}
+            className="cartoon-btn btn-gold"
+            style={{ padding: '0.32rem 0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+            title="Menu"
+          >
+            {isMobileMenuOpen ? <X size={15} /> : <Menu size={15} />}
+            <span>Menu</span>
+          </button>
+        </div>
       </header>
+
+      {/* Mobile Navigation Drawer (Section 78) */}
+      {isMobileMenuOpen && (
+        <div className="mobile-drawer-overlay">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Sparkles size={20} color="#f59e0b" />
+              <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#f8fafc' }}>{GAME_NAME}</span>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="cartoon-btn"
+              style={{ padding: '0.4rem', background: '#334155', borderRadius: '50%' }}
+            >
+              <X size={18} color="#f8fafc" />
+            </button>
+          </div>
+
+          <div className="mobile-drawer-content">
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigateTo('/');
+              }}
+            >
+              <Home size={20} color="#38bdf8" />
+              <span>Home</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                loadLevel(levelNumber);
+              }}
+            >
+              <Play size={20} color="#fbbf24" fill="currentColor" />
+              <span>Play Level {levelNumber}</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigateTo('/levels');
+              }}
+            >
+              <Map size={20} color="#34d399" />
+              <span>Adventure Map</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigateTo('/daily-challenge');
+              }}
+            >
+              <Calendar size={20} color="#f43f5e" />
+              <span>Daily Challenge Quest</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigateTo('/leaderboard');
+              }}
+            >
+              <Trophy size={20} color="#fbbf24" />
+              <span>Leaderboard</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigateTo('/achievements');
+              }}
+            >
+              <Award size={20} color="#a855f7" />
+              <span>Achievements</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (user) navigateTo('/dashboard');
+                else navigateTo('/login');
+              }}
+            >
+              <User size={20} color="#38bdf8" />
+              <span>{user ? user.name : 'Sign In / Register'}</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigateTo('/help');
+              }}
+            >
+              <HelpCircle size={20} color="#38bdf8" />
+              <span>Help & Rules</span>
+            </div>
+
+            <div
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigateTo('/settings');
+              }}
+            >
+              <Settings size={20} color="#94a3b8" />
+              <span>Settings & Audio</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main View Router */}
       {currentView === 'landing' ? (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
           <LandingPage
             onPlayNow={() => loadLevel(levelNumber)}
-            onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
-            onOpenAchievements={() => setIsAchievementsOpen(true)}
-            onOpenLevelSelect={() => setIsLevelSelectOpen(true)}
+            onOpenLeaderboard={() => navigateTo('/leaderboard')}
+            onOpenAchievements={() => navigateTo('/achievements')}
+            onOpenLevelSelect={() => navigateTo('/levels')}
+            onOpenDailyChallenge={() => navigateTo('/daily-challenge')}
           />
         </div>
       ) : (
@@ -832,7 +1080,7 @@ export default function App() {
       {/* Universal Modals */}
       <AuthModal
         isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
+        onClose={() => closeModal(setIsAuthOpen)}
         onAuthSuccess={(authedUser) => {
           setUser(authedUser);
           if (authedUser.currentLevel) setHighestUnlockedLevel(authedUser.currentLevel);
@@ -851,20 +1099,20 @@ export default function App() {
         bestCombo={bestCombo}
         rescuedObjects={rescuedCount}
         boosterInventory={boosterInventory}
-        onClose={() => setIsDashboardOpen(false)}
+        onClose={() => closeModal(setIsDashboardOpen)}
         onLogout={() => setUser(null)}
       />
 
       <LeaderboardModal
         isOpen={isLeaderboardOpen}
-        onClose={() => setIsLeaderboardOpen(false)}
+        onClose={() => closeModal(setIsLeaderboardOpen)}
         currentUserName={user ? user.name : 'Guest Player'}
         currentUserScore={score}
       />
 
       <AchievementsModal
         isOpen={isAchievementsOpen}
-        onClose={() => setIsAchievementsOpen(false)}
+        onClose={() => closeModal(setIsAchievementsOpen)}
         stats={{
           bubblesPopped: bubblesPoppedCount,
           completedLevels: completedLevels.length,
@@ -887,7 +1135,18 @@ export default function App() {
         onUnlockAll={() => {
           setHighestUnlockedLevel(TOTAL_PRIMARY_LEVELS);
         }}
-        onClose={() => setIsLevelSelectOpen(false)}
+        onClose={() => closeModal(setIsLevelSelectOpen)}
+      />
+
+      {/* Daily Challenge Modal (Section 74 - Bonus) */}
+      <DailyChallengeModal
+        isOpen={isDailyChallengeOpen}
+        onClose={() => closeModal(setIsDailyChallengeOpen)}
+        onPlayDaily={(dailyConfig) => {
+          setIsDailyChallengeOpen(false);
+          loadLevel(dailyConfig.levelNumber, dailyConfig);
+        }}
+        user={user}
       />
 
       <LevelCompleteModal
@@ -903,7 +1162,7 @@ export default function App() {
         onReplay={() => loadLevel(levelNumber)}
         onLevelSelect={() => {
           setIsLevelCompleteOpen(false);
-          setIsLevelSelectOpen(true);
+          navigateTo('/levels');
         }}
       />
 
@@ -916,7 +1175,7 @@ export default function App() {
         onUseExtraShots={() => handleUseBooster('extra_shots')}
         onLevelSelect={() => {
           setIsLevelFailedOpen(false);
-          setIsLevelSelectOpen(true);
+          navigateTo('/levels');
         }}
       />
 
@@ -930,14 +1189,14 @@ export default function App() {
         }}
         onLevelSelect={() => {
           setIsPauseOpen(false);
-          setIsLevelSelectOpen(true);
+          navigateTo('/levels');
         }}
       />
 
       {/* Settings Modal (Section 58, 59, 89) */}
       <SettingsModal
         isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        onClose={() => closeModal(setIsSettingsOpen)}
         soundEnabled={soundEnabled}
         musicEnabled={musicEnabled}
         onToggleSound={toggleSound}
@@ -947,7 +1206,7 @@ export default function App() {
       {/* Help Modal (Section 10–21, 26, 38–40, 76) */}
       <HelpModal
         isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
+        onClose={() => closeModal(setIsHelpOpen)}
       />
     </div>
   );
