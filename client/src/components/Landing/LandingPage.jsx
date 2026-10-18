@@ -21,11 +21,18 @@ import {
   HelpCircle,
   CheckCircle2,
   Users,
-  Star
+  Star,
+  Calendar
 } from 'lucide-react';
 import { audioManager } from '../../utils/audioManager';
 
-export default function LandingPage({ onPlayNow, onOpenLeaderboard, onOpenAchievements, onOpenLevelSelect }) {
+export default function LandingPage({
+  onPlayNow,
+  onOpenLeaderboard,
+  onOpenAchievements,
+  onOpenLevelSelect,
+  onOpenDailyChallenge
+}) {
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState(0);
 
@@ -270,6 +277,24 @@ export default function LandingPage({ onPlayNow, onOpenLeaderboard, onOpenAchiev
             >
               <Map size={22} /> SAGA MAP
             </button>
+
+            {onOpenDailyChallenge && (
+              <button
+                onClick={() => {
+                  audioManager.playButtonClick();
+                  onOpenDailyChallenge();
+                }}
+                className="cartoon-btn btn-ruby"
+                style={{
+                  fontSize: '1.1rem',
+                  padding: '1.15rem 2rem',
+                  borderRadius: '1.6rem',
+                  boxShadow: '0 8px 25px rgba(239, 68, 68, 0.4)'
+                }}
+              >
+                <Calendar size={22} /> DAILY QUEST
+              </button>
+            )}
           </div>
         </div>
 
