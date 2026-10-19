@@ -378,6 +378,14 @@ export default function BubbleCanvas({
                   newGrid[fb.row][fb.col] = null;
                   const { x, y } = getBubbleCenter(fb.row, fb.col, BUBBLE_RADIUS, BOARD_WIDTH);
                   pSystem.addFallingBubble(x, y, BUBBLE_RADIUS, fb.bubble);
+
+                  // Free trapped dragon if dropped via cascade
+                  if (typeof fb.bubble === 'object' && fb.bubble.hasRescueTarget) {
+                    rescuedCount++;
+                    audioManager.playRescueSound();
+                    pSystem.spawnFreedDragon(x, y);
+                    pSystem.spawnTextPopup(x, y - 25, '🎉 DRAGON SAVED!', '#10b981', 22);
+                  }
                 });
 
                 pSystem.spawnTextPopup(BOARD_WIDTH / 2, hitY - 15, `+${floatScore} CASCADE!`, '#38bdf8', 22);

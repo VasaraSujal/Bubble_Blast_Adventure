@@ -18,8 +18,9 @@ export const checkObjectiveCompletion = ({
     }
 
     case 'rescue': {
-      // Complete when required count of trapped baby dragons are freed
-      return rescuedCount >= objective.target;
+      // Complete when required count of trapped baby dragons are freed OR when board is completely cleared
+      const isBoardCleared = !grid || grid.length === 0 || grid.every(row => !row || row.every(cell => cell === null));
+      return rescuedCount >= objective.target || isBoardCleared;
     }
 
     case 'score': {
