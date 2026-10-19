@@ -32,8 +32,6 @@ export default function StarScorePanel({
     <div
       className="game-hud-panel"
       style={{
-        width: '240px',
-        display: 'flex',
         flexDirection: 'column',
         gap: '0.45rem',
         flexShrink: 0

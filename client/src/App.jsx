@@ -501,27 +501,28 @@ export default function App() {
             audioManager.playButtonClick();
             setCurrentView('landing');
           }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', flexShrink: 0 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', flexShrink: 0 }}
         >
           <div
             style={{
-              width: '30px',
-              height: '30px',
+              width: '28px',
+              height: '28px',
               borderRadius: '50%',
               background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 60%, #b45309 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px solid #fef3c7'
+              border: '2px solid #fef3c7',
+              flexShrink: 0
             }}
           >
-            <Sparkles size={16} color="#78350f" />
+            <Sparkles size={15} color="#78350f" />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: '#f8fafc', lineHeight: 1.1 }}>
+            <h1 className="header-brand-title">
               {GAME_NAME}
             </h1>
-            <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600 }}>
+            <span className="header-brand-subtitle">
               {currentView === 'game' ? `Lvl ${levelNumber} (${levelConfig.difficulty.toUpperCase()})` : 'Dragon Pop Edition'}
             </span>
           </div>
@@ -529,7 +530,7 @@ export default function App() {
 
         {/* IN-GAME ACTIVE HUD: Always front and center so score & shots are 100% visible together */}
         {currentView === 'game' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexWrap: 'nowrap', justifyContent: 'center' }}>
             {/* Shots Remaining */}
             <div
               className="hud-pill"
@@ -540,7 +541,7 @@ export default function App() {
               }}
             >
               <span>🎯</span>
-              <span>Shots: <strong style={{ fontSize: '0.92rem' }}>{shotsRemaining}</strong></span>
+              <span><strong style={{ fontSize: '0.88rem' }}>{shotsRemaining}</strong></span>
             </div>
 
             {/* Score */}
@@ -552,30 +553,35 @@ export default function App() {
               }}
             >
               <span>⭐</span>
-              <span>Score: <strong style={{ fontSize: '0.92rem' }}>{score.toLocaleString()}</strong></span>
+              <span><strong style={{ fontSize: '0.88rem' }}>{score.toLocaleString()}</strong></span>
             </div>
 
-            {/* Mission Objective */}
-            <div
-              className="hud-pill"
-              style={{
-                borderColor: 'rgba(16, 185, 129, 0.45)',
-                color: '#34d399'
-              }}
-              title={levelConfig.objective.description}
-            >
-              {levelConfig.objective.type === 'rescue' ? (
-                <>
-                  <span>🦕</span>
-                  <span>{rescuedCount} / {levelConfig.objective.target} Rescued</span>
-                </>
-              ) : (
-                <>
-                  <span>🎯</span>
-                  <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{levelConfig.objective.description}</span>
-                </>
-              )}
-            </div>
+            {/* Mission Objective (Rescue target or desktop description) */}
+            {levelConfig.objective.type === 'rescue' ? (
+              <div
+                className="hud-pill"
+                style={{
+                  borderColor: 'rgba(16, 185, 129, 0.45)',
+                  color: '#34d399'
+                }}
+                title={levelConfig.objective.description}
+              >
+                <span>🦕</span>
+                <span><strong>{rescuedCount}/{levelConfig.objective.target}</strong></span>
+              </div>
+            ) : (
+              <div
+                className="hud-pill desktop-only-objective"
+                style={{
+                  borderColor: 'rgba(16, 185, 129, 0.45)',
+                  color: '#34d399'
+                }}
+                title={levelConfig.objective.description}
+              >
+                <span>🎯</span>
+                <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{levelConfig.objective.description}</span>
+              </div>
+            )}
 
             {/* Combo Streak */}
             {combo > 1 && (
@@ -753,13 +759,14 @@ export default function App() {
         </div>
 
         {/* Mobile Navigation Toggle (Section 78) */}
-        <div className="mobile-nav-toggle" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div className="mobile-nav-toggle" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
           <button
             onClick={toggleSound}
             className="cartoon-btn"
-            style={{ padding: '0.3rem 0.45rem', background: soundEnabled ? 'rgba(56, 189, 248, 0.25)' : '#334155' }}
+            style={{ padding: '0.3rem', minWidth: '32px', height: '32px', borderRadius: '50%', background: soundEnabled ? 'rgba(56, 189, 248, 0.25)' : '#334155' }}
+            title="Toggle Sound"
           >
-            {soundEnabled ? <Volume2 size={14} color="#38bdf8" /> : <VolumeX size={14} color="#94a3b8" />}
+            {soundEnabled ? <Volume2 size={15} color="#38bdf8" /> : <VolumeX size={15} color="#94a3b8" />}
           </button>
 
           {currentView === 'game' && (
@@ -769,10 +776,10 @@ export default function App() {
                 setIsPauseOpen(true);
               }}
               className="cartoon-btn"
-              style={{ padding: '0.3rem 0.45rem', background: '#334155', color: '#f8fafc' }}
+              style={{ padding: '0.3rem', minWidth: '32px', height: '32px', borderRadius: '50%', background: '#334155', color: '#f8fafc' }}
               title="Pause Game"
             >
-              <Pause size={14} />
+              <Pause size={15} />
             </button>
           )}
 
@@ -782,11 +789,10 @@ export default function App() {
               setIsMobileMenuOpen(prev => !prev);
             }}
             className="cartoon-btn btn-gold"
-            style={{ padding: '0.32rem 0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+            style={{ padding: '0.3rem', minWidth: '34px', height: '32px', borderRadius: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             title="Menu"
           >
-            {isMobileMenuOpen ? <X size={15} /> : <Menu size={15} />}
-            <span>Menu</span>
+            {isMobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
       </header>
@@ -1096,6 +1102,68 @@ export default function App() {
               isLevelOver={isLevelCompleteOpen || isLevelFailedOpen}
               onUseBooster={handleUseBooster}
             />
+
+            {/* Mobile-Only Tactical Controls (Undo, Hint, Swap) */}
+            <div
+              className="mobile-tactical-bar"
+              style={{
+                display: 'none',
+                gap: '0.4rem',
+                marginTop: '0.25rem',
+                width: '100%',
+                maxWidth: '480px',
+                justifyContent: 'center'
+              }}
+            >
+              <button
+                onClick={() => {
+                  audioManager.playButtonClick();
+                  handleSwapBubbles();
+                }}
+                className="cartoon-btn btn-gold"
+                style={{ padding: '0.22rem 0.5rem', fontSize: '0.72rem', flex: 1, height: '28px' }}
+                title="Swap loaded bubble"
+              >
+                <RefreshCw size={11} /> Swap
+              </button>
+
+              <button
+                onClick={handleUndo}
+                disabled={historyRef.current.length === 0}
+                className="cartoon-btn btn-cyan"
+                style={{ padding: '0.22rem 0.5rem', fontSize: '0.72rem', flex: 1, height: '28px' }}
+                title="Undo last shot"
+              >
+                <Undo2 size={11} /> Undo
+              </button>
+
+              <button
+                onClick={handleHint}
+                className="cartoon-btn btn-emerald"
+                style={{ padding: '0.22rem 0.5rem', fontSize: '0.72rem', flex: 1, height: '28px' }}
+                title="Show Aim Hint"
+              >
+                <Lightbulb size={11} /> Hint
+              </button>
+            </div>
+
+            {hintMessage && (
+              <div
+                style={{
+                  padding: '0.2rem 0.5rem',
+                  fontSize: '0.7rem',
+                  color: '#fbbf24',
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  borderRadius: '0.4rem',
+                  textAlign: 'center',
+                  marginTop: '0.2rem',
+                  maxWidth: '380px'
+                }}
+              >
+                {hintMessage}
+              </div>
+            )}
           </div>
 
           {/* Right Tactical Column: Live 3-Star Score Progress, Combo Flame & Stats Matrix */}
