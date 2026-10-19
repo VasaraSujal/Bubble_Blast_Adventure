@@ -76,18 +76,17 @@ export default function DailyChallengeModal({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 85,
-        padding: '1.25rem'
+        padding: '0.75rem'
       }}
     >
       <div
-        className="glass-panel"
+        className="glass-panel responsive-modal-padding"
         style={{
           maxWidth: '540px',
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          padding: '2rem 1.75rem',
           border: '3px solid #ec4899',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(236, 72, 153, 0.4)',
           position: 'relative'
