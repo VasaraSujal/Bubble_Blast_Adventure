@@ -10,6 +10,7 @@ import gameRoutes from './routes/gameRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import achievementRoutes from './routes/achievementRoutes.js';
 import playerRoutes from './routes/playerRoutes.js';
+import dailyRoutes from './routes/dailyRoutes.js';
 import { seedAchievementsIfEmpty } from './utils/achievementChecker.js';
 
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api/games', gameRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/player', playerRoutes);
+app.use('/api/daily-challenge', dailyRoutes);
 
 // Health check / API Info
 app.get('/api/info', (req, res) => {
