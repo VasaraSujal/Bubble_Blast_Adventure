@@ -103,71 +103,77 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
           {isRegister && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.35rem', fontWeight: 600 }}>
                 Player Name
               </label>
-              <div style={{ position: 'relative' }}>
-                <User size={18} color="#64748b" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+              <div className="auth-input-group">
+                <User size={18} className="auth-input-icon" />
                 <input
                   type="text"
                   required
+                  autoComplete="username"
+                  spellCheck="false"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. DragonRider"
-                  style={{ width: '100%', padding: '0.65rem 0.75rem 0.65rem 2.4rem', borderRadius: '0.75rem', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid #334155', color: '#f8fafc', fontSize: '0.9rem' }}
+                  className="auth-input"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.35rem', fontWeight: 600 }}>
               Email Address
             </label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={18} color="#64748b" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+            <div className="auth-input-group">
+              <Mail size={18} className="auth-input-icon" />
               <input
                 type="email"
                 required
+                autoComplete="email"
+                spellCheck="false"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="player@example.com"
-                style={{ width: '100%', padding: '0.65rem 0.75rem 0.65rem 2.4rem', borderRadius: '0.75rem', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid #334155', color: '#f8fafc', fontSize: '0.9rem' }}
+                className="auth-input"
               />
             </div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.35rem', fontWeight: 600 }}>
               Password
             </label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={18} color="#64748b" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+            <div className="auth-input-group">
+              <Lock size={18} className="auth-input-icon" />
               <input
                 type="password"
                 required
+                autoComplete={isRegister ? "new-password" : "current-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                style={{ width: '100%', padding: '0.65rem 0.75rem 0.65rem 2.4rem', borderRadius: '0.75rem', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid #334155', color: '#f8fafc', fontSize: '0.9rem' }}
+                className="auth-input"
               />
             </div>
           </div>
 
           {isRegister && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.35rem', fontWeight: 600 }}>
                 Confirm Password
               </label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={18} color="#64748b" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+              <div className="auth-input-group">
+                <Lock size={18} className="auth-input-icon" />
                 <input
                   type="password"
                   required
+                  autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{ width: '100%', padding: '0.65rem 0.75rem 0.65rem 2.4rem', borderRadius: '0.75rem', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid #334155', color: '#f8fafc', fontSize: '0.9rem' }}
+                  className="auth-input"
                 />
               </div>
             </div>
