@@ -245,7 +245,7 @@ h1, h2, h3, h4, .font-heading {
   border: 2px solid rgba(245, 158, 11, 0.35) !important;
   margin: 0 auto !important;
   width: 100% !important;
-  max-width: 1020px !important;
+  max-width: 1240px !important;
   flex-shrink: 0 !important;
 }
 
@@ -263,13 +263,40 @@ h1, h2, h3, h4, .font-heading {
   align-items: center;
   gap: 0.35rem;
   justify-content: center;
+  flex-shrink: 1;
 }
 
 .desktop-nav-controls {
   display: flex;
-  gap: 0.3rem;
+  gap: 0.25rem;
   align-items: center;
   flex-shrink: 0;
+}
+
+.desktop-nav-controls button {
+  padding: 0.28rem 0.42rem !important;
+}
+
+/* Hide redundant objective description text on screens < 1280px to prevent navbar overflow */
+.desktop-only-objective {
+  display: none !important;
+}
+
+@media (min-width: 1280px) {
+  .desktop-only-objective {
+    display: inline-flex !important;
+  }
+}
+
+/* Responsive button labels: compact icon-only under 1200px, full text on ultra-wide */
+.nav-btn-text {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .nav-btn-text {
+    display: inline;
+  }
 }
 
 .mobile-nav-toggle {
@@ -283,7 +310,7 @@ h1, h2, h3, h4, .font-heading {
     align-items: center !important;
     justify-content: space-between !important;
     padding: 0.35rem 0.85rem !important;
-    gap: 0.5rem !important;
+    gap: 0.4rem !important;
   }
   .header-brand-container {
     order: 1 !important;

@@ -598,7 +598,7 @@ export default function App() {
               style={{ padding: '0.3rem 0.55rem', fontSize: '0.78rem', background: '#334155', color: '#f8fafc' }}
               title="Home"
             >
-              <Home size={14} /> Home
+              <Home size={14} /> <span className="nav-btn-text">Home</span>
             </button>
           ) : (
             <button
@@ -609,7 +609,7 @@ export default function App() {
               className="cartoon-btn btn-gold"
               style={{ padding: '0.32rem 0.7rem', fontSize: '0.8rem' }}
             >
-              <Play size={14} fill="currentColor" /> Play
+              <Play size={14} fill="currentColor" /> <span className="nav-btn-text">Play</span>
             </button>
           )}
 
@@ -622,7 +622,7 @@ export default function App() {
             style={{ padding: '0.3rem 0.55rem', fontSize: '0.78rem' }}
             title="Adventure Map"
           >
-            <Map size={14} /> Map
+            <Map size={14} /> <span className="nav-btn-text">Map</span>
           </button>
 
           {/* Daily Challenge Button (Section 74) */}
@@ -635,7 +635,7 @@ export default function App() {
             style={{ padding: '0.3rem 0.55rem', fontSize: '0.78rem' }}
             title="Daily Challenge Quest"
           >
-            <Calendar size={14} /> Daily
+            <Calendar size={14} /> <span className="nav-btn-text">Daily</span>
           </button>
 
           <button
@@ -727,7 +727,7 @@ export default function App() {
               className="cartoon-btn btn-emerald"
               style={{ padding: '0.3rem 0.65rem', fontSize: '0.78rem' }}
             >
-              <User size={14} /> {user ? user.name : 'Sign In'}
+              <User size={14} /> <span className="nav-btn-text">{user ? user.name : 'Sign In'}</span>
             </button>
           ) : (
             <button
