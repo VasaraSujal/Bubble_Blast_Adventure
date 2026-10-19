@@ -221,7 +221,84 @@ export const getLevelDefinition = (levelNumber) => {
 
 export const TOTAL_PRIMARY_LEVELS = 40;
 
+/**
+ * Generates a date-seeded Daily Challenge puzzle (Section 74)
+ * Deterministically constructs a 6-row formation with 4 trapped baby dragons
+ * and a 45-bubble queue keyed by the day number.
+ */
+export const getDailyChallengeDefinition = (dayNumber = 284) => {
+  const activeColors = ['red', 'blue', 'purple', 'yellow', 'green'];
+  const rows = 6;
+  const COLS_EVEN = 8;
+  const COLS_ODD = 7;
+  const rescueTarget = 4;
+  let rescuePlaced = 0;
+
+  // Strategic positions for the 4 dragons in row 2 and row 4
+  const dragonPositions = [
+    { r: 2, c: 2 },
+    { r: 2, c: 5 },
+    { r: 4, c: 2 },
+    { r: 4, c: 5 }
+  ];
+
+  const boardLayout = [];
+  for (let r = 0; r < rows; r++) {
+    const colCount = (r % 2 === 0) ? COLS_EVEN : COLS_ODD;
+    const row = [];
+
+    for (let c = 0; c < colCount; c++) {
+      // Natural arcade clustering using dayNumber as deterministic seed
+      const clusterCol = Math.floor(c / 2);
+      const clusterRow = Math.floor(r / 2);
+      const seedVal = (dayNumber * 37 + clusterRow * 19 + clusterCol * 13 + c) % activeColors.length;
+      const color = activeColors[seedVal];
+
+      const isDragonSlot = dragonPositions.some(p => p.r === r && p.c === c);
+      if (isDragonSlot && rescuePlaced < rescueTarget) {
+        row.push({
+          color,
+          hasRescueTarget: true,
+          rescueType: 'baby_dragon'
+        });
+        rescuePlaced++;
+      } else {
+        row.push(color);
+      }
+    }
+    boardLayout.push(row);
+  }
+
+  // Pre-generated bubble queue (45 bubbles) seeded from dayNumber
+  const bubbleQueue = [];
+  for (let i = 0; i < 45; i++) {
+    const qSeed = (dayNumber * 29 + Math.floor(i / 2) * 7 + (i % 3)) % activeColors.length;
+    bubbleQueue.push(activeColors[qSeed]);
+  }
+
+  return {
+    levelNumber: `Daily #${dayNumber}`,
+    difficulty: 'Special Event',
+    objective: {
+      type: 'rescue',
+      target: rescueTarget,
+      description: `Rescue ${rescueTarget} enchanted baby dragons trapped in the daily vortex!`
+    },
+    shots: 22,
+    colors: activeColors,
+    boardLayout,
+    bubbleQueue,
+    targetScore: 2400,
+    starThresholds: [800, 1600, 2400],
+    isDaily: true,
+    rewardCoins: 500,
+    rewardBooster: 'rainbow',
+    availableBoosters: ['extra_shots', 'aim_guide', 'bomb', 'rainbow', 'shuffle']
+  };
+};
+
 export default {
   getLevelDefinition,
+  getDailyChallengeDefinition,
   TOTAL_PRIMARY_LEVELS
 };

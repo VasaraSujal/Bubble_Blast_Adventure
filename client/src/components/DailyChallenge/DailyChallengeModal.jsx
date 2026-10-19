@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Flame, Trophy, Play, CheckCircle2, Sparkles, Gift, Clock, ShieldAlert } from 'lucide-react';
 import { audioManager } from '../../utils/audioManager';
+import { getDailyChallengeDefinition } from '../../data/levels/levelRegistry';
 
 /**
  * DailyChallengeModal (Section 74 - Bonus Feature)
  * Date-seeded puzzle with special rewards (+500 Coins, +1 Booster)
- * and consecutive daily streak tracking.
+ * and consecutive daily streak, completion status, score, and best result tracking.
  */
 export default function DailyChallengeModal({
   isOpen,
@@ -17,6 +18,7 @@ export default function DailyChallengeModal({
   const [isCompletedToday, setIsCompletedToday] = useState(false);
   const [todayDateStr, setTodayDateStr] = useState('');
   const [dailyDayNumber, setDailyDayNumber] = useState(284);
+  const [bestScore, setBestScore] = useState(0);
 
   useEffect(() => {
     const today = new Date();
@@ -35,11 +37,13 @@ export default function DailyChallengeModal({
     const dayOfYear = Math.floor(diff / oneDay);
     setDailyDayNumber(dayOfYear);
 
-    // Check localStorage for today's completion
+    // Check localStorage for today's completion and stats
     const savedDate = localStorage.getItem('bubble_blast_daily_last_date');
     const todayKey = today.toISOString().split('T')[0];
     const savedStreak = parseInt(localStorage.getItem('bubble_blast_daily_streak') || '1', 10);
+    const savedBestScore = parseInt(localStorage.getItem('bubble_blast_daily_best_score') || '0', 10);
     setStreak(savedStreak);
+    setBestScore(savedBestScore);
 
     if (savedDate === todayKey) {
       setIsCompletedToday(true);
@@ -50,23 +54,8 @@ export default function DailyChallengeModal({
 
   if (!isOpen) return null;
 
-  // Daily puzzle preset
-  const dailyConfig = {
-    levelNumber: `Daily #${dailyDayNumber}`,
-    difficulty: 'Special Event',
-    objective: {
-      type: 'rescue',
-      target: 4,
-      description: 'Rescue 4 enchanted baby dragons trapped in the daily vortex!'
-    },
-    shots: 22,
-    colors: ['red', 'blue', 'purple', 'yellow'],
-    targetScore: 2400,
-    starThresholds: [800, 1600, 2400],
-    isDaily: true,
-    rewardCoins: 500,
-    rewardBooster: 'Rainbow Bubble'
-  };
+  // Fully configured date-seeded puzzle definition with boardLayout and bubbleQueue
+  const dailyConfig = getDailyChallengeDefinition(dailyDayNumber);
 
   const handleStartDaily = () => {
     audioManager.playButtonClick();
@@ -225,23 +214,21 @@ export default function DailyChallengeModal({
           <div>
             <span style={{ color: '#94a3b8', fontSize: '0.75rem', display: 'block' }}>Target Goal</span>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#38bdf8', marginTop: '2px' }}>
-              🦕 Rescue 4 Dragons
+              🦕 Rescue {dailyConfig.objective.target} Dragons
             </div>
           </div>
 
           <div>
             <span style={{ color: '#94a3b8', fontSize: '0.75rem', display: 'block' }}>Shot Limit</span>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fbbf24', marginTop: '2px' }}>
-              🎯 22 Shots
+              🎯 {dailyConfig.shots} Shots
             </div>
           </div>
 
           <div>
-            <span style={{ color: '#94a3b8', fontSize: '0.75rem', display: 'block' }}>Bubble Colors</span>
-            <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-              {['#ef4444', '#38bdf8', '#a855f7', '#fbbf24'].map(c => (
-                <div key={c} style={{ width: '14px', height: '14px', borderRadius: '50%', background: c, border: '1px solid #fff' }} />
-              ))}
+            <span style={{ color: '#94a3b8', fontSize: '0.75rem', display: 'block' }}>Best Result</span>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#a855f7', marginTop: '2px' }}>
+              🏆 {bestScore > 0 ? `${bestScore.toLocaleString()} Pts` : 'No Record'}
             </div>
           </div>
 
@@ -249,6 +236,36 @@ export default function DailyChallengeModal({
             <span style={{ color: '#94a3b8', fontSize: '0.75rem', display: 'block' }}>Challenge Status</span>
             <div style={{ fontSize: '0.95rem', fontWeight: 800, color: isCompletedToday ? '#34d399' : '#f59e0b', marginTop: '2px' }}>
               {isCompletedToday ? '✅ Claimed' : '⏳ Ready to Play'}
+            </div>
+          </div>
+
+          <div style={{ gridColumn: 'span 2' }}>
+            <span style={{ color: '#94a3b8', fontSize: '0.75rem', display: 'block' }}>Active Puzzle Colors</span>
+            <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+              {dailyConfig.colors.map(c => {
+                const colorMap = {
+                  red: '#ef4444',
+                  blue: '#38bdf8',
+                  green: '#10b981',
+                  yellow: '#fbbf24',
+                  purple: '#a855f7',
+                  orange: '#f97316'
+                };
+                return (
+                  <div
+                    key={c}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      background: colorMap[c] || c,
+                      border: '1.5px solid #ffffff',
+                      boxShadow: '0 0 6px rgba(0,0,0,0.5)'
+                    }}
+                    title={c}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
