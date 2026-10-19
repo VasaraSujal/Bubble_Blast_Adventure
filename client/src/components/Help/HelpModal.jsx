@@ -19,45 +19,45 @@ export default function HelpModal({ isOpen, onClose }) {
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 85,
-        padding: '1.25rem'
+        padding: '0.75rem'
       }}
     >
       <div
-        className="glass-panel"
+        className="glass-panel responsive-modal-padding"
         style={{
           maxWidth: '640px',
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          padding: '1.75rem',
           border: '3px solid #10b981',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(16, 185, 129, 0.35)',
           position: 'relative'
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div
               style={{
-                width: '42px',
-                height: '42px',
+                width: '38px',
+                height: '38px',
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, #10b981, #047857)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 15px rgba(16, 185, 129, 0.5)'
+                boxShadow: '0 0 15px rgba(16, 185, 129, 0.5)',
+                flexShrink: 0
               }}
             >
-              <HelpCircle size={22} color="#ffffff" />
+              <HelpCircle size={20} color="#ffffff" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.5rem', color: '#f8fafc', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              <h2 style={{ fontSize: '1.35rem', color: '#f8fafc', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.5)', lineHeight: 1.15 }}>
                 Dragon Guide & Rules
               </h2>
-              <span style={{ fontSize: '0.8rem', color: '#34d399', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.75rem', color: '#34d399', fontWeight: 600 }}>
                 {GAME_NAME} Academy
               </span>
             </div>
@@ -69,14 +69,14 @@ export default function HelpModal({ isOpen, onClose }) {
               onClose();
             }}
             className="cartoon-btn"
-            style={{ padding: '0.45rem', background: '#334155', borderRadius: '50%' }}
+            style={{ padding: '0.45rem', background: '#334155', borderRadius: '50%', flexShrink: 0 }}
           >
             <X size={18} color="#f8fafc" />
           </button>
         </div>
 
         {/* Section Tabs */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1rem', width: '100%' }}>
           <button
             onClick={() => {
               audioManager.playButtonClick();
@@ -84,14 +84,20 @@ export default function HelpModal({ isOpen, onClose }) {
             }}
             className={`cartoon-btn ${activeSection === 'mechanics' ? 'btn-emerald' : ''}`}
             style={{
-              padding: '0.4rem 0.85rem',
-              fontSize: '0.82rem',
+              flex: 1,
+              minWidth: 0,
+              padding: '0.45rem 0.25rem',
+              fontSize: '0.76rem',
               borderRadius: '0.75rem',
-              background: activeSection === 'mechanics' ? undefined : '#1e293b',
-              transform: 'none'
+              background: activeSection === 'mechanics' ? undefined : 'rgba(30, 41, 59, 0.95)',
+              color: activeSection === 'mechanics' ? '#ffffff' : '#e2e8f0',
+              border: activeSection === 'mechanics' ? undefined : '1.5px solid rgba(255, 255, 255, 0.15)',
+              transform: 'none',
+              boxShadow: 'none',
+              whiteSpace: 'nowrap'
             }}
           >
-            <Target size={14} /> Core Physics
+            <Target size={13} /> Physics
           </button>
           <button
             onClick={() => {
@@ -100,14 +106,20 @@ export default function HelpModal({ isOpen, onClose }) {
             }}
             className={`cartoon-btn ${activeSection === 'boosters' ? 'btn-gold' : ''}`}
             style={{
-              padding: '0.4rem 0.85rem',
-              fontSize: '0.82rem',
+              flex: 1,
+              minWidth: 0,
+              padding: '0.45rem 0.25rem',
+              fontSize: '0.76rem',
               borderRadius: '0.75rem',
-              background: activeSection === 'boosters' ? undefined : '#1e293b',
-              transform: 'none'
+              background: activeSection === 'boosters' ? undefined : 'rgba(30, 41, 59, 0.95)',
+              color: activeSection === 'boosters' ? '#78350f' : '#e2e8f0',
+              border: activeSection === 'boosters' ? undefined : '1.5px solid rgba(255, 255, 255, 0.15)',
+              transform: 'none',
+              boxShadow: 'none',
+              whiteSpace: 'nowrap'
             }}
           >
-            <Zap size={14} /> Booster Guide
+            <Zap size={13} /> Boosters
           </button>
           <button
             onClick={() => {
@@ -116,23 +128,29 @@ export default function HelpModal({ isOpen, onClose }) {
             }}
             className={`cartoon-btn ${activeSection === 'scoring' ? 'btn-cyan' : ''}`}
             style={{
-              padding: '0.4rem 0.85rem',
-              fontSize: '0.82rem',
+              flex: 1,
+              minWidth: 0,
+              padding: '0.45rem 0.25rem',
+              fontSize: '0.76rem',
               borderRadius: '0.75rem',
-              background: activeSection === 'scoring' ? undefined : '#1e293b',
-              transform: 'none'
+              background: activeSection === 'scoring' ? undefined : 'rgba(30, 41, 59, 0.95)',
+              color: activeSection === 'scoring' ? '#ffffff' : '#e2e8f0',
+              border: activeSection === 'scoring' ? undefined : '1.5px solid rgba(255, 255, 255, 0.15)',
+              transform: 'none',
+              boxShadow: 'none',
+              whiteSpace: 'nowrap'
             }}
           >
-            <Flame size={14} /> Scoring & Combos
+            <Flame size={13} /> Combos
           </button>
         </div>
 
         {/* Tab 1: Core Physics & Mechanics */}
         {activeSection === 'mechanics' && (
-          <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.85rem', paddingRight: '0.25rem' }}>
-            <div className="glass-panel" style={{ padding: '0.9rem', background: 'rgba(15, 23, 42, 0.7)' }}>
-              <strong style={{ color: '#38bdf8', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Target size={18} /> 1. Aiming & Bank Shots
+          <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.25rem', paddingBottom: '0.5rem', WebkitOverflowScrolling: 'touch' }}>
+            <div className="glass-panel" style={{ padding: '0.85rem', background: 'rgba(15, 23, 42, 0.7)' }}>
+              <strong style={{ color: '#38bdf8', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Target size={16} /> 1. Aiming & Bank Shots
               </strong>
               <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: '0.35rem 0 0 0', lineHeight: 1.5 }}>
                 Move your mouse (or drag your finger on mobile) to adjust the cannon's aim. The dashed laser trajectory reveals where your bubble will travel. Aim towards the left or right walls to perform <strong>bank shots</strong> that bounce around obstacles!

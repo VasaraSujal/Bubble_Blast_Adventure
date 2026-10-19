@@ -74,51 +74,51 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 85,
-        padding: '1.25rem'
+        padding: '0.75rem'
       }}
     >
       <div
-        className="glass-panel"
+        className="glass-panel responsive-modal-padding"
         style={{
           maxWidth: '680px',
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          padding: '1.75rem',
           border: '3px solid #f59e0b',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(245, 158, 11, 0.35)',
           position: 'relative'
         }}
       >
         {/* Header Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div
               style={{
-                width: '44px',
-                height: '44px',
+                width: '38px',
+                height: '38px',
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, #f59e0b, #b45309)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 15px rgba(245, 158, 11, 0.5)'
+                boxShadow: '0 0 15px rgba(245, 158, 11, 0.5)',
+                flexShrink: 0
               }}
             >
-              <Trophy size={24} color="#ffffff" />
+              <Trophy size={20} color="#ffffff" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.6rem', color: '#f8fafc', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              <h2 style={{ fontSize: '1.35rem', color: '#f8fafc', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.5)', lineHeight: 1.15 }}>
                 Hall of Champions
               </h2>
-              <span style={{ fontSize: '0.8rem', color: '#fbbf24', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.75rem', color: '#fbbf24', fontWeight: 600 }}>
                 {GAME_NAME} Global Standings
               </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.45rem' }}>
+          <div style={{ display: 'flex', gap: '0.35rem', flexShrink: 0 }}>
             <button
               onClick={() => {
                 audioManager.playButtonClick();
@@ -126,10 +126,10 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
               }}
               disabled={loading}
               className="cartoon-btn"
-              style={{ padding: '0.45rem', background: '#334155', borderRadius: '50%' }}
+              style={{ padding: '0.4rem', background: '#334155', borderRadius: '50%' }}
               title="Refresh Leaderboard"
             >
-              <RefreshCw size={16} color="#f8fafc" className={loading ? 'animate-spin' : ''} />
+              <RefreshCw size={15} color="#f8fafc" className={loading ? 'animate-spin' : ''} />
             </button>
             <button
               onClick={() => {
@@ -137,7 +137,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
                 onClose();
               }}
               className="cartoon-btn"
-              style={{ padding: '0.45rem', background: '#334155', borderRadius: '50%' }}
+              style={{ padding: '0.4rem', background: '#334155', borderRadius: '50%' }}
             >
               <X size={18} color="#f8fafc" />
             </button>
@@ -223,23 +223,24 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
 
         {/* Top 3 Podium Visual Cards */}
         {searchQuery === '' && top3.length >= 3 && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr', gap: '0.65rem', marginBottom: '1.25rem', alignItems: 'flex-end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr', gap: '0.4rem', marginBottom: '1rem', alignItems: 'flex-end', width: '100%' }}>
             {/* Rank 2 - Silver */}
             <div
               className="glass-panel"
               style={{
-                padding: '0.85rem 0.5rem',
+                padding: '0.65rem 0.25rem',
                 textAlign: 'center',
                 border: '2px solid #94a3b8',
-                borderRadius: '1rem',
-                background: 'rgba(30, 41, 59, 0.65)'
+                borderRadius: '0.85rem',
+                background: 'rgba(30, 41, 59, 0.65)',
+                minWidth: 0
               }}
             >
-              <div style={{ fontSize: '1.6rem' }}>🥈</div>
-              <strong style={{ fontSize: '0.88rem', color: '#f8fafc', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '1.4rem' }}>🥈</div>
+              <strong style={{ fontSize: '0.82rem', color: '#f8fafc', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {top3[1]?.player}
               </strong>
-              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#38bdf8' }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#38bdf8' }}>
                 {(top3[1]?.score || 0).toLocaleString()}
               </div>
             </div>
@@ -248,18 +249,19 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
             <div
               className="gold-panel pulse-glow"
               style={{
-                padding: '1.1rem 0.5rem',
+                padding: '0.9rem 0.35rem',
                 textAlign: 'center',
                 border: '3px solid #f59e0b',
-                borderRadius: '1.25rem',
-                background: 'rgba(15, 23, 42, 0.95)'
+                borderRadius: '1rem',
+                background: 'rgba(15, 23, 42, 0.95)',
+                minWidth: 0
               }}
             >
-              <div style={{ fontSize: '2.2rem' }}>👑 🥇</div>
-              <strong style={{ fontSize: '0.98rem', color: '#fcd34d', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '1.8rem' }}>👑 🥇</div>
+              <strong style={{ fontSize: '0.9rem', color: '#fcd34d', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {top3[0]?.player}
               </strong>
-              <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#fbbf24' }}>
+              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fbbf24' }}>
                 {(top3[0]?.score || 0).toLocaleString()}
               </div>
             </div>
@@ -268,18 +270,19 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
             <div
               className="glass-panel"
               style={{
-                padding: '0.75rem 0.5rem',
+                padding: '0.6rem 0.25rem',
                 textAlign: 'center',
                 border: '2px solid #b45309',
-                borderRadius: '1rem',
-                background: 'rgba(30, 41, 59, 0.65)'
+                borderRadius: '0.85rem',
+                background: 'rgba(30, 41, 59, 0.65)',
+                minWidth: 0
               }}
             >
-              <div style={{ fontSize: '1.6rem' }}>🥉</div>
-              <strong style={{ fontSize: '0.88rem', color: '#f8fafc', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '1.4rem' }}>🥉</div>
+              <strong style={{ fontSize: '0.82rem', color: '#f8fafc', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {top3[2]?.player}
               </strong>
-              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#38bdf8' }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#38bdf8' }}>
                 {(top3[2]?.score || 0).toLocaleString()}
               </div>
             </div>
@@ -287,15 +290,15 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
         )}
 
         {/* Scrollable Leaderboard Table (Section 71) */}
-        <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.25rem', marginBottom: '0.85rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+        <div style={{ overflowY: 'auto', overflowX: 'auto', flex: 1, paddingRight: '0.25rem', marginBottom: '0.85rem', WebkitOverflowScrolling: 'touch' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
             <thead>
               <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
-                <th style={{ padding: '0.55rem 0.5rem' }}>Rank</th>
-                <th style={{ padding: '0.55rem 0.5rem' }}>Player</th>
-                <th style={{ padding: '0.55rem 0.5rem', textAlign: 'right' }}>Score</th>
-                <th style={{ padding: '0.55rem 0.5rem', textAlign: 'center' }}>Stars</th>
-                <th style={{ padding: '0.55rem 0.5rem', textAlign: 'center' }}>Best Combo</th>
+                <th style={{ padding: '0.5rem 0.35rem' }}>Rank</th>
+                <th style={{ padding: '0.5rem 0.35rem' }}>Player</th>
+                <th style={{ padding: '0.5rem 0.35rem', textAlign: 'right' }}>Score</th>
+                <th style={{ padding: '0.5rem 0.35rem', textAlign: 'center' }}>Stars</th>
+                <th className="desktop-only-col" style={{ padding: '0.5rem 0.35rem', textAlign: 'center' }}>Best Combo</th>
               </tr>
             </thead>
             <tbody>
@@ -314,20 +317,20 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserName, cur
                       background: rank <= 3 ? 'rgba(245, 158, 11, 0.05)' : 'transparent'
                     }}
                   >
-                    <td style={{ padding: '0.55rem 0.5rem', fontWeight: 700, fontSize: rank <= 3 ? '1.1rem' : '0.85rem' }}>
+                    <td style={{ padding: '0.5rem 0.35rem', fontWeight: 700, fontSize: rank <= 3 ? '1.05rem' : '0.82rem' }}>
                       {rankBadge}
                     </td>
-                    <td style={{ padding: '0.55rem 0.5rem', fontWeight: 600, color: '#f8fafc' }}>
+                    <td style={{ padding: '0.5rem 0.35rem', fontWeight: 600, color: '#f8fafc', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {entry.player}
                     </td>
-                    <td style={{ padding: '0.55rem 0.5rem', textAlign: 'right', fontWeight: 800, color: '#fbbf24' }}>
+                    <td style={{ padding: '0.5rem 0.35rem', textAlign: 'right', fontWeight: 800, color: '#fbbf24' }}>
                       {(entry.score || 0).toLocaleString()}
                     </td>
-                    <td style={{ padding: '0.55rem 0.5rem', textAlign: 'center', color: '#f8fafc' }}>
+                    <td style={{ padding: '0.5rem 0.35rem', textAlign: 'center', color: '#f8fafc' }}>
                       <Star size={12} fill="#fbbf24" color="#fbbf24" style={{ verticalAlign: 'middle', marginRight: '3px' }} />
                       {entry.stars || 0}
                     </td>
-                    <td style={{ padding: '0.55rem 0.5rem', textAlign: 'center', color: '#ec4899', fontWeight: 700 }}>
+                    <td className="desktop-only-col" style={{ padding: '0.5rem 0.35rem', textAlign: 'center', color: '#ec4899', fontWeight: 700 }}>
                       x{entry.bestCombo || 0}
                     </td>
                   </tr>
