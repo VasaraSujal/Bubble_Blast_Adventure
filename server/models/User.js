@@ -64,6 +64,14 @@ const userSchema = new mongoose.Schema({
   boosterInventory: {
     type: boosterInventorySchema,
     default: () => ({})
+  },
+  dailyStreak: {
+    type: Number,
+    default: 1
+  },
+  lastDailyDate: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
