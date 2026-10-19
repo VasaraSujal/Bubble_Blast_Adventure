@@ -63,18 +63,17 @@ export default function DashboardModal({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 85,
-        padding: '1.25rem'
+        padding: '0.75rem'
       }}
     >
       <div
-        className="glass-panel"
+        className="glass-panel responsive-modal-padding"
         style={{
           maxWidth: '640px',
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          padding: '1.75rem',
           border: '3px solid #38bdf8',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.35)',
           position: 'relative'

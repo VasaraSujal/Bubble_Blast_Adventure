@@ -58,11 +58,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       }}
     >
       <div
-        className="glass-panel"
+        className="glass-panel responsive-modal-padding"
         style={{
           maxWidth: '400px',
           width: '100%',
-          padding: '2rem 1.5rem',
           border: '2px solid rgba(56, 189, 248, 0.4)',
           position: 'relative'
         }}
