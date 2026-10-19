@@ -526,13 +526,14 @@ export default function BubbleCanvas({
         ref={canvasRef}
         width={BOARD_WIDTH}
         height={BOARD_HEIGHT}
+        className="bubble-board-canvas"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         style={{
           width: 'auto',
           maxWidth: '100%',
-          maxHeight: 'min(63vh, calc(100vh - 135px))',
+          maxHeight: 'min(58vh, calc(100dvh - 120px))',
           aspectRatio: `${BOARD_WIDTH}/${BOARD_HEIGHT}`,
           borderRadius: '1.25rem',
           border: '3.5px solid #f59e0b',
