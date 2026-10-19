@@ -18,7 +18,7 @@ import SettingsModal from './components/Settings/SettingsModal';
 import HelpModal from './components/Help/HelpModal';
 import DailyChallengeModal from './components/DailyChallenge/DailyChallengeModal';
 
-import { getLevelDefinition, TOTAL_PRIMARY_LEVELS } from './data/levels/levelRegistry';
+import { getLevelDefinition, getDailyChallengeDefinition, TOTAL_PRIMARY_LEVELS } from './data/levels/levelRegistry';
 import { checkObjectiveCompletion, calculateStars } from './game/objectiveManager';
 import { findRecommendedHint } from './game/hintManager';
 import { audioManager } from './utils/audioManager';
@@ -195,7 +195,17 @@ export default function App() {
 
   // Initialize level
   const loadLevel = async (num, customConfig = null) => {
-    const config = customConfig || getLevelDefinition(typeof num === 'number' ? num : 1);
+    let config = customConfig;
+    if (!config) {
+      if (typeof num === 'string' && num.includes('Daily')) {
+        const match = num.match(/\d+/);
+        const day = match ? parseInt(match[0], 10) : 284;
+        config = getDailyChallengeDefinition(day);
+      } else {
+        config = getLevelDefinition(typeof num === 'number' ? num : 1);
+      }
+    }
+
     setLevelNumber(num);
     setLevelConfig(config);
     setShotsRemaining(config.shots);
@@ -221,7 +231,7 @@ export default function App() {
     setHintMessage(null);
     setCurrentView('game');
 
-    const routePath = typeof num === 'number' ? `/game/${num}` : '/game/1';
+    const routePath = typeof num === 'number' ? `/game/${num}` : '/daily-challenge';
     if (window.location.pathname !== routePath) {
       window.history.pushState(null, '', routePath);
     }
@@ -312,7 +322,33 @@ export default function App() {
         return [...prev, { levelNumber, stars: earnedStars, score }];
       });
 
-      if (levelNumber >= highestUnlockedLevel) {
+      if (levelConfig.isDaily) {
+        const today = new Date();
+        const todayKey = today.toISOString().split('T')[0];
+        const prevDate = localStorage.getItem('bubble_blast_daily_last_date');
+        let currentStreak = parseInt(localStorage.getItem('bubble_blast_daily_streak') || '0', 10);
+
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        if (prevDate === yesterday) {
+          currentStreak += 1;
+        } else if (prevDate !== todayKey) {
+          currentStreak = 1;
+        }
+        localStorage.setItem('bubble_blast_daily_last_date', todayKey);
+        localStorage.setItem('bubble_blast_daily_streak', currentStreak.toString());
+
+        const prevBest = parseInt(localStorage.getItem('bubble_blast_daily_best_score') || '0', 10);
+        if (score > prevBest) {
+          localStorage.setItem('bubble_blast_daily_best_score', score.toString());
+        }
+
+        // Grant daily bounty: +500 Coins & +1 Rainbow booster
+        setScore(s => s + 500);
+        setBoosterInventory(prev => ({
+          ...prev,
+          rainbow: (prev.rainbow || 0) + 1
+        }));
+      } else if (typeof levelNumber === 'number' && levelNumber >= highestUnlockedLevel) {
         setHighestUnlockedLevel(levelNumber + 1);
       }
 
@@ -320,7 +356,7 @@ export default function App() {
       audioManager.playLevelCompleteSound();
       setIsLevelCompleteOpen(true);
 
-      if (sessionToken) {
+      if (sessionToken && typeof levelNumber === 'number') {
         await gameService.completeSession({
           sessionToken,
           levelNumber,
@@ -1158,8 +1194,21 @@ export default function App() {
         shotsRemaining={shotsRemaining}
         bubblesPopped={bubblesPoppedCount}
         bestCombo={bestCombo}
-        onNextLevel={() => loadLevel(levelNumber + 1)}
-        onReplay={() => loadLevel(levelNumber)}
+        onNextLevel={() => {
+          if (levelConfig?.isDaily) {
+            setIsLevelCompleteOpen(false);
+            navigateTo('/daily-challenge');
+          } else {
+            loadLevel(typeof levelNumber === 'number' ? levelNumber + 1 : 1);
+          }
+        }}
+        onReplay={() => {
+          if (levelConfig?.isDaily) {
+            loadLevel(levelNumber, levelConfig);
+          } else {
+            loadLevel(levelNumber);
+          }
+        }}
         onLevelSelect={() => {
           setIsLevelCompleteOpen(false);
           navigateTo('/levels');
@@ -1171,7 +1220,13 @@ export default function App() {
         levelNumber={levelNumber}
         objectiveDescription={levelConfig.objective.description}
         hasExtraShotsBooster={boosterInventory.extra_shots > 0}
-        onRetry={() => loadLevel(levelNumber)}
+        onRetry={() => {
+          if (levelConfig?.isDaily) {
+            loadLevel(levelNumber, levelConfig);
+          } else {
+            loadLevel(levelNumber);
+          }
+        }}
         onUseExtraShots={() => handleUseBooster('extra_shots')}
         onLevelSelect={() => {
           setIsLevelFailedOpen(false);
@@ -1185,7 +1240,11 @@ export default function App() {
         onResume={() => setIsPauseOpen(false)}
         onRestart={() => {
           setIsPauseOpen(false);
-          loadLevel(levelNumber);
+          if (levelConfig?.isDaily) {
+            loadLevel(levelNumber, levelConfig);
+          } else {
+            loadLevel(levelNumber);
+          }
         }}
         onLevelSelect={() => {
           setIsPauseOpen(false);

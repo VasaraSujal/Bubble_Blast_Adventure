@@ -173,10 +173,18 @@ export default function LevelCompleteModal({
             style={{
               fontSize: '1.2rem',
               padding: '0.85rem',
-              boxShadow: '0 8px 25px rgba(245, 158, 11, 0.5)'
+              boxShadow: '0 8px 25px rgba(245, 158, 11, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
             }}
           >
-            NEXT LEVEL <ArrowRight size={22} />
+            {typeof levelNumber === 'string' && levelNumber.startsWith('Daily') ? (
+              <>CLAIM DAILY REWARDS <Sparkles size={22} /></>
+            ) : (
+              <>NEXT LEVEL <ArrowRight size={22} /></>
+            )}
           </button>
 
           <div style={{ display: 'flex', gap: '0.65rem' }}>
