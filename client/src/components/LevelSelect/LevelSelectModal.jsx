@@ -43,18 +43,17 @@ export default function LevelSelectModal({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 80,
-        padding: '1.25rem'
+        padding: '0.75rem'
       }}
     >
       <div
-        className="glass-panel"
+        className="glass-panel responsive-modal-padding"
         style={{
           maxWidth: '740px',
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          padding: '1.75rem',
           border: '3px solid #f59e0b',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(245, 158, 11, 0.35)',
           position: 'relative'

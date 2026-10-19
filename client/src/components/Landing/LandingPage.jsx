@@ -168,7 +168,7 @@ export default function LandingPage({
       {/* 1. HERO SECTION */}
       <section className="landing-section" style={{ paddingTop: '2rem', paddingBottom: '3.5rem' }}>
         <div
-          className="gold-panel float-wobble"
+          className="gold-panel float-wobble responsive-hero-card"
           style={{
             padding: '3rem 2rem',
             maxWidth: '720px',
@@ -181,14 +181,14 @@ export default function LandingPage({
           <div style={{ display: 'inline-block', marginBottom: '1rem' }}>
             <div
               style={{
-                width: '95px',
-                height: '95px',
+                width: '85px',
+                height: '85px',
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, #10b981 0%, #047857 70%, #064e3b 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '3.2rem',
+                fontSize: '2.8rem',
                 border: '4px solid #fcd34d',
                 boxShadow: '0 12px 30px rgba(16, 185, 129, 0.6), inset 0 3px 6px rgba(255,255,255,0.4)',
                 margin: '0 auto'
@@ -221,7 +221,7 @@ export default function LandingPage({
           {/* Dynamic Game Title (Section 4, 5, 6, 77) */}
           <h1
             style={{
-              fontSize: '2.9rem',
+              fontSize: 'clamp(1.75rem, 6.5vw, 2.9rem)',
               color: '#f8fafc',
               marginBottom: '0.65rem',
               fontWeight: 800,
