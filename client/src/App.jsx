@@ -480,28 +480,14 @@ export default function App() {
       <AmbientBubbles count={16} />
 
       {/* Top Universal Navbar / In-Game HUD Header */}
-      <header
-        className="glass-panel"
-        style={{
-          padding: '0.35rem 0.85rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          maxWidth: '1020px',
-          margin: '0 auto',
-          width: '100%',
-          flexShrink: 0,
-          border: '2px solid rgba(245, 158, 11, 0.35)',
-          gap: '0.5rem'
-        }}
-      >
+      <header className="glass-panel app-header">
         {/* Brand */}
         <div
+          className="header-brand-container"
           onClick={() => {
             audioManager.playButtonClick();
             setCurrentView('landing');
           }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', flexShrink: 0 }}
         >
           <div
             style={{
@@ -518,7 +504,7 @@ export default function App() {
           >
             <Sparkles size={15} color="#78350f" />
           </div>
-          <div>
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
             <h1 className="header-brand-title">
               {GAME_NAME}
             </h1>
@@ -530,7 +516,7 @@ export default function App() {
 
         {/* IN-GAME ACTIVE HUD: Always front and center so score & shots are 100% visible together */}
         {currentView === 'game' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexWrap: 'nowrap', justifyContent: 'center' }}>
+          <div className="header-hud-container">
             {/* Shots Remaining */}
             <div
               className="hud-pill"
@@ -759,7 +745,7 @@ export default function App() {
         </div>
 
         {/* Mobile Navigation Toggle (Section 78) */}
-        <div className="mobile-nav-toggle" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
+        <div className="mobile-nav-toggle">
           <button
             onClick={toggleSound}
             className="cartoon-btn"

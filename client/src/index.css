@@ -239,9 +239,30 @@ h1, h2, h3, h4, .font-heading {
   white-space: nowrap;
 }
 
-/* Responsive Navigation Controls */
-.mobile-nav-toggle {
-  display: none !important;
+/* Responsive Application Header & Navigation Controls */
+.app-header {
+  box-sizing: border-box !important;
+  border: 2px solid rgba(245, 158, 11, 0.35) !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  max-width: 1020px !important;
+  flex-shrink: 0 !important;
+}
+
+.header-brand-container {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.header-hud-container {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-content: center;
 }
 
 .desktop-nav-controls {
@@ -249,6 +270,34 @@ h1, h2, h3, h4, .font-heading {
   gap: 0.3rem;
   align-items: center;
   flex-shrink: 0;
+}
+
+.mobile-nav-toggle {
+  display: none !important;
+}
+
+@media (min-width: 769px) {
+  .app-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.35rem 0.85rem !important;
+    gap: 0.5rem !important;
+  }
+  .header-brand-container {
+    order: 1 !important;
+  }
+  .header-hud-container {
+    order: 2 !important;
+  }
+  .desktop-nav-controls {
+    order: 3 !important;
+    display: flex !important;
+  }
+  .mobile-nav-toggle {
+    display: none !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -427,19 +476,82 @@ input, textarea {
     display: none !important;
   }
 
-  /* Compact In-Game Top HUD on Mobile */
-  .header-brand-title {
-    font-size: 0.88rem !important;
+  /* Dual-Tier Responsive Header for Mobile Screens (Sections 50, 78, 80) */
+  .app-header {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.25rem 0.45rem !important;
+    gap: 0.2rem 0.35rem !important;
+    border-radius: 0.85rem !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
   }
+
+  /* Row 1 Left: Brand */
+  .header-brand-container {
+    order: 1 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 105px) !important;
+    overflow: hidden !important;
+  }
+
+  .header-brand-title {
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+  }
+
   .header-brand-subtitle {
     display: none !important;
   }
+
+  /* Row 1 Right: Mobile Navigation Controls */
+  .mobile-nav-toggle {
+    order: 2 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+  }
+
+  .mobile-nav-toggle button {
+    min-width: 30px !important;
+    width: 30px !important;
+    height: 30px !important;
+    padding: 0.2rem !important;
+  }
+
+  /* Row 2: In-Game Active HUD Centered Ribbon */
+  .header-hud-container {
+    order: 3 !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.3rem !important;
+    padding-top: 0.2rem !important;
+    margin-top: 0.1rem !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
   .hud-pill {
     padding: 0.16rem 0.42rem !important;
     font-size: 0.72rem !important;
   }
+
   .mobile-tactical-bar {
     display: flex !important;
+  }
+
+  .bubble-board-canvas {
+    max-height: min(54vh, calc(100dvh - 170px)) !important;
   }
 }
 
