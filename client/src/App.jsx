@@ -196,6 +196,34 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Keyboard Shortcuts (PDF Section 52)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't intercept when typing in form inputs
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
+
+      if (e.key === 'Escape') {
+        if (isPauseOpen) {
+          setIsPauseOpen(false);
+        } else if (currentView === 'game' && !isLevelCompleteOpen && !isLevelFailedOpen) {
+          setIsPauseOpen(true);
+        }
+      } else if (e.key === 'r' || e.key === 'R') {
+        if (currentView === 'game' && !isLevelCompleteOpen) {
+          loadLevel(levelNumber, levelConfig?.isDaily ? levelConfig : null);
+        }
+      } else if (e.code === 'Space' || e.key === 'c' || e.key === 'C') {
+        if (currentView === 'game' && !isPauseOpen && !isLevelCompleteOpen && !isLevelFailedOpen) {
+          e.preventDefault();
+          handleSwapBubbles();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentView, isPauseOpen, isLevelCompleteOpen, isLevelFailedOpen, levelNumber, levelConfig, currentBubble, nextBubble]);
+
   // Initialize level
   const loadLevel = async (num, customConfig = null) => {
     let config = customConfig;
@@ -1277,6 +1305,8 @@ export default function App() {
         shotsRemaining={shotsRemaining}
         bubblesPopped={bubblesPoppedCount}
         bestCombo={bestCombo}
+        objective={levelConfig?.objective}
+        rescuedCount={rescuedCount}
         onNextLevel={() => {
           if (levelConfig?.isDaily) {
             setIsLevelCompleteOpen(false);

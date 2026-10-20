@@ -12,6 +12,8 @@ export default function LevelCompleteModal({
   shotsRemaining = 13,
   bubblesPopped = 28,
   bestCombo = 3,
+  objective = null,
+  rescuedCount = 0,
   onNextLevel,
   onReplay,
   onLevelSelect
@@ -90,9 +92,34 @@ export default function LevelCompleteModal({
           <h2 style={{ fontSize: '2.2rem', color: '#fcd34d', margin: 0, textShadow: '0 3px 6px rgba(0,0,0,0.6)' }}>
             LEVEL {levelNumber}
           </h2>
-          <p style={{ color: '#94a3b8', fontSize: '0.95rem', margin: '0.2rem 0 1.25rem 0' }}>
+          <p style={{ color: '#94a3b8', fontSize: '0.95rem', margin: '0.2rem 0 0.5rem 0' }}>
             Outstanding shooting! All objectives completed!
           </p>
+          {objective && (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: 'rgba(34, 197, 94, 0.18)',
+                border: '1px solid rgba(34, 197, 94, 0.45)',
+                color: '#86efac',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '9999px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                marginBottom: '0.75rem',
+                boxShadow: '0 0 12px rgba(34, 197, 94, 0.25)'
+              }}
+            >
+              <span>{objective.type === 'rescue' ? '🦕' : '🎯'}</span>
+              <span>
+                {objective.type === 'rescue'
+                  ? `Goal Achieved: ${Math.max(rescuedCount || 0, objective.target)}/${objective.target} Dragons Rescued!`
+                  : objective.description || 'Target Cleared!'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* 3-Star Animated Reveal (Section 34) */}
