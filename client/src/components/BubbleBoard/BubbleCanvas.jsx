@@ -11,6 +11,7 @@ import { audioManager } from '../../utils/audioManager.js';
 
 export default function BubbleCanvas({
   initialBoard,
+  restoreGrid = null,
   shotsRemaining = 25,
   currentBubble = 'red',
   nextBubble = 'blue',
@@ -54,6 +55,13 @@ export default function BubbleCanvas({
       setGrid(initialBoard);
     }
   }, [initialBoard]);
+
+  // Sync grid when restoreGrid triggers (Section 46: Real Undo Board Restoration)
+  useEffect(() => {
+    if (restoreGrid && restoreGrid.grid) {
+      setGrid(restoreGrid.grid.map(r => r ? [...r] : []));
+    }
+  }, [restoreGrid]);
 
   // Compute aiming angle from pointer coordinates
   const updateAimFromPointer = useCallback((clientX, clientY) => {
@@ -106,8 +114,8 @@ export default function BubbleCanvas({
     });
 
     setRecoil(14);
-    if (onShotFired) onShotFired();
-  }, [projectile, shotsRemaining, aimAngle, LAUNCHER_X, LAUNCHER_Y, currentBubble, onShotFired]);
+    if (onShotFired) onShotFired(grid);
+  }, [projectile, shotsRemaining, aimAngle, LAUNCHER_X, LAUNCHER_Y, currentBubble, onShotFired, grid]);
 
   // Pointer events
   const handlePointerDown = (e) => {

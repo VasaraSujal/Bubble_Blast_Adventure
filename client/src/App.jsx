@@ -95,8 +95,10 @@ export default function App() {
   // Mascot Companion Reaction
   const [mascotReaction, setMascotReaction] = useState('idle');
 
-  // History for Undo
+  // History for Undo (Section 46)
   const historyRef = useRef([]);
+  const liveGridRef = useRef(null);
+  const [boardRestoreTrigger, setBoardRestoreTrigger] = useState(null);
 
   // Modals
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -218,6 +220,8 @@ export default function App() {
     setAimGuideActive(false);
     setMascotReaction('idle');
     historyRef.current = [];
+    liveGridRef.current = config.boardLayout ? config.boardLayout.map(r => r ? [...r] : []) : null;
+    setBoardRestoreTrigger(null);
 
     const queue = config.bubbleQueue || ['red', 'blue', 'green', 'yellow'];
     setCurrentBubble(queue[0] || 'red');
@@ -257,14 +261,16 @@ export default function App() {
     audioManager.setMusicEnabled(next);
   };
 
-  const handleShotFired = () => {
+  const handleShotFired = (currentGridSnapshot) => {
+    const gridToSave = currentGridSnapshot || liveGridRef.current;
     historyRef.current.push({
       shotsRemaining,
       score,
       combo,
       currentBubble,
       nextBubble,
-      rescuedCount
+      rescuedCount,
+      grid: gridToSave ? gridToSave.map(r => r ? [...r] : []) : null
     });
 
     setShotsRemaining(prev => Math.max(0, prev - 1));
@@ -300,6 +306,7 @@ export default function App() {
   };
 
   const handleBoardStateChange = async (newGrid) => {
+    liveGridRef.current = newGrid;
     const isComplete = checkObjectiveCompletion({
       objective: levelConfig.objective,
       grid: newGrid,
@@ -432,15 +439,20 @@ export default function App() {
     setCurrentBubble(previous.currentBubble);
     setNextBubble(previous.nextBubble);
     setRescuedCount(previous.rescuedCount);
-    setHintMessage('Reverted previous shot.');
+    if (previous.grid) {
+      liveGridRef.current = previous.grid.map(r => r ? [...r] : []);
+      setBoardRestoreTrigger({ grid: previous.grid, id: Date.now() });
+    }
+    setHintMessage('Reverted previous shot & restored board.');
     setTimeout(() => setHintMessage(null), 3000);
   };
 
   const handleHint = () => {
     audioManager.playButtonClick();
+    const activeGrid = liveGridRef.current || levelConfig.boardLayout;
     const hint = findRecommendedHint({
       currentBubble,
-      grid: levelConfig.boardLayout,
+      grid: activeGrid,
       boardWidth: 480,
       boardHeight: 640,
       launcherX: 240,
@@ -1067,6 +1079,7 @@ export default function App() {
             {/* The Canvas (Responsively scaled with maxHeight: min(63vh, calc(100vh - 135px))) */}
             <BubbleCanvas
               initialBoard={levelConfig.boardLayout}
+              restoreGrid={boardRestoreTrigger}
               shotsRemaining={shotsRemaining}
               currentBubble={currentBubble}
               nextBubble={nextBubble}
