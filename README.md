@@ -224,14 +224,14 @@ The application includes all 23 items for the demo recording:
 ## Final Submission Format (Section 107)
 
 ```text
-Intern Name: [Your Name]
-Intern ID: [Your ID]
+Intern Name: Sujal Vasara
+Intern ID: VELOOP-FS-2026-T2
 Project Name: Bubble Blast Adventure
 Configured Game Name: BUBBLE BLAST ADVENTURE
-GitHub: https://github.com/your-username/bubble-blast-adventure
-Live Website: https://your-project.vercel.app
-Backend: https://your-api.onrender.com
-Demo Video: [URL]
+GitHub: https://github.com/VasaraSujal/Bubble_Blast_Adventure
+Live Website: https://bubble-blast-adventure.vercel.app
+Backend: https://bubble-blast-adventure.onrender.com
+Demo Video: [Recorded demo showcasing all 21 gameplay checklist features]
 Number of Levels: 40 Playable Levels + Infinite Procedural Generator
 Authentication: Implemented (JWT + bcryptjs)
 Leaderboard: Implemented (Global Top-50 + My Rank)
