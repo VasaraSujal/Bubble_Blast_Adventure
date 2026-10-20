@@ -7,7 +7,8 @@ const CHAPTERS = [
   { id: 1, title: '🌲 Emerald Forest', levels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], desc: 'Learn the basics & rescue your first dragons!' },
   { id: 2, title: '💎 Crystal Caverns', levels: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20], desc: 'Denser clusters, tactical bank shots & color hunts.' },
   { id: 3, title: '🏝️ Sunken Dragon Isles', levels: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30], desc: 'High score challenges & multi-creature rescues.' },
-  { id: 4, title: '🌋 Dragon Summit', levels: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40], desc: 'Expert trials with tight shots and grand rewards!' }
+  { id: 4, title: '🌋 Dragon Summit', levels: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40], desc: 'Expert trials with tight shots and grand rewards!' },
+  { id: 5, title: '🌌 Endless Realm', levels: [41, 42, 43, 44, 45, 46, 47, 48, 49, 50], desc: 'Infinite procedural levels with evolving challenges!' }
 ];
 
 export default function LevelSelectModal({
