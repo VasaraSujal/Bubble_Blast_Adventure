@@ -149,7 +149,7 @@ export const getLevelDefinition = (levelNumber) => {
       objective,
       shots: 30,
       colors: ['red', 'blue'],
-      boardLayout: curatedL1,
+      boardLayout: curatedL1.map(r => [...r]),
       bubbleQueue: ['red', 'blue', 'red', 'blue', 'red', 'blue', 'red', 'blue', 'red', 'blue', 'red', 'blue'],
       targetScore: 1200,
       starThresholds: [400, 800, 1200],

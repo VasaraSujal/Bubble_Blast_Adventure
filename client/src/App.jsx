@@ -59,6 +59,7 @@ export default function App() {
 
   // Active Level State
   const [levelNumber, setLevelNumber] = useState(1);
+  const [sessionInstanceId, setSessionInstanceId] = useState(1);
   const [levelConfig, setLevelConfig] = useState(() => getLevelDefinition(1));
   const [highestUnlockedLevel, setHighestUnlockedLevel] = useState(1);
   const [completedLevels, setCompletedLevels] = useState([]);
@@ -208,9 +209,20 @@ export default function App() {
       }
     }
 
+    // Deep-clone boardLayout to ensure clean independent grid state on every restart
+    const clonedBoard = config.boardLayout
+      ? config.boardLayout.map(row => row ? row.map(cell => (typeof cell === 'object' && cell !== null ? { ...cell } : cell)) : [])
+      : [];
+
+    const activeConfig = {
+      ...config,
+      boardLayout: clonedBoard
+    };
+
+    setSessionInstanceId(prev => prev + 1);
     setLevelNumber(num);
-    setLevelConfig(config);
-    setShotsRemaining(config.shots);
+    setLevelConfig(activeConfig);
+    setShotsRemaining(activeConfig.shots);
     setScore(0);
     setCombo(0);
     setBestCombo(0);
@@ -220,7 +232,7 @@ export default function App() {
     setAimGuideActive(false);
     setMascotReaction('idle');
     historyRef.current = [];
-    liveGridRef.current = config.boardLayout ? config.boardLayout.map(r => r ? [...r] : []) : null;
+    liveGridRef.current = clonedBoard.map(r => r ? [...r] : []);
     setBoardRestoreTrigger(null);
 
     const queue = config.bubbleQueue || ['red', 'blue', 'green', 'yellow'];
@@ -1081,6 +1093,7 @@ export default function App() {
           >
             {/* The Canvas (Responsively scaled with maxHeight: min(63vh, calc(100vh - 135px))) */}
             <BubbleCanvas
+              key={`canvas_${levelNumber}_${sessionInstanceId}`}
               initialBoard={levelConfig.boardLayout}
               restoreGrid={boardRestoreTrigger}
               shotsRemaining={shotsRemaining}
