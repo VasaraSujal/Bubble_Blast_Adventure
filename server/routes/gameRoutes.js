@@ -242,4 +242,40 @@ router.get('/history', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /api/games/:id
+ * @desc    Get details of a specific game session by ID (Section 91)
+ * @access  Public (Guest or Authenticated)
+ */
+router.get('/:id', optionalAuth, async (req, res) => {
+  try {
+    const session = await GameSession.findById(req.params.id).select('-__v');
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Game session not found.'
+      });
+    }
+
+    if (session.userId && req.user && session.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this game session.'
+      });
+    }
+
+    return res.json({
+      success: true,
+      session
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve game session',
+      error: error.message
+    });
+  }
+});
+
 export default router;
