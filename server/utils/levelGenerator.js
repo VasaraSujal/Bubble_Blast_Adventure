@@ -10,7 +10,28 @@
  * - 41+: Infinite procedural generator for endless play
  */
 
+import Level from '../models/Level.js';
+
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+
+export const seedLevelsIfEmpty = async () => {
+  try {
+    const count = await Level.countDocuments();
+    if (count < 40) {
+      console.log(`[Levels] Seeding missing levels into MongoDB (current: ${count})...`);
+      for (let i = 1; i <= 40; i++) {
+        const existing = await Level.findOne({ levelNumber: i });
+        if (!existing) {
+          const levelData = generateLevelData(i);
+          await Level.create(levelData);
+        }
+      }
+      console.log('[Levels] Successfully seeded all 40 levels into MongoDB.');
+    }
+  } catch (err) {
+    console.error('[Levels Seed Error]:', err.message);
+  }
+};
 
 export const generateLevelData = (levelNumber) => {
   let difficulty = 'easy';

@@ -12,6 +12,7 @@ import achievementRoutes from './routes/achievementRoutes.js';
 import playerRoutes from './routes/playerRoutes.js';
 import dailyRoutes from './routes/dailyRoutes.js';
 import { seedAchievementsIfEmpty } from './utils/achievementChecker.js';
+import { seedLevelsIfEmpty } from './utils/levelGenerator.js';
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   await connectDB();
   await seedAchievementsIfEmpty();
+  await seedLevelsIfEmpty();
 
   if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
