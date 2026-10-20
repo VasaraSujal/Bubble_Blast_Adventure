@@ -409,13 +409,16 @@ export default function BubbleCanvas({
 
             setGrid(newGrid);
 
-            if (onScoreAdded && totalPointsEarned > 0) onScoreAdded(totalPointsEarned);
+            const extraRescueScore = rescuedCount > 0 ? calculateRescueScore(rescuedCount) : 0;
+            const overallPointsEarned = totalPointsEarned + extraRescueScore;
+
+            if (onScoreAdded && overallPointsEarned > 0) onScoreAdded(overallPointsEarned);
             if (onRescueFree && rescuedCount > 0) {
-              const rescueScore = calculateRescueScore(rescuedCount);
-              if (onScoreAdded) onScoreAdded(rescueScore);
               onRescueFree(rescuedCount);
             }
-            if (onBoardStateChange) onBoardStateChange(newGrid);
+            if (onBoardStateChange) {
+              onBoardStateChange(newGrid, { pointsEarned: overallPointsEarned, newlyRescued: rescuedCount });
+            }
           }
 
           setProjectile(null);

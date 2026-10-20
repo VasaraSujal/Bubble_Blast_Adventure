@@ -11,30 +11,29 @@ export const checkObjectiveCompletion = ({
 }) => {
   if (!objective) return false;
 
+  // Universal Bubble Shooter Rule: Clearing the entire board is always an automatic victory
+  const isBoardCleared = !grid || grid.length === 0 || grid.every(row => !row || row.every(cell => cell === null));
+  if (isBoardCleared) return true;
+
   switch (objective.type) {
     case 'clear_all': {
-      // Complete when all bubbles on the board are cleared
-      return !grid || grid.every(row => !row || row.every(cell => cell === null));
+      return isBoardCleared;
     }
 
     case 'rescue': {
-      // Complete when required count of trapped baby dragons are freed OR when board is completely cleared
-      const isBoardCleared = !grid || grid.length === 0 || grid.every(row => !row || row.every(cell => cell === null));
       return rescuedCount >= objective.target || isBoardCleared;
     }
 
     case 'score': {
-      // Complete when player exceeds target score
-      return score >= objective.target;
+      return score >= objective.target || isBoardCleared;
     }
 
     case 'color_hunt': {
-      // Complete when required count of specified color are popped
-      return colorHuntCount >= objective.target;
+      return colorHuntCount >= objective.target || isBoardCleared;
     }
 
     default:
-      return false;
+      return isBoardCleared;
   }
 };
 
