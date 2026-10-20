@@ -305,28 +305,31 @@ export default function App() {
     setTimeout(() => setMascotReaction('idle'), 2500);
   };
 
-  const handleBoardStateChange = async (newGrid) => {
+  const handleBoardStateChange = async (newGrid, deltaStats = {}) => {
     liveGridRef.current = newGrid;
+    const currentScore = score + (deltaStats.pointsEarned || 0);
+    const currentRescued = rescuedCount + (deltaStats.newlyRescued || 0);
+
     const isComplete = checkObjectiveCompletion({
       objective: levelConfig.objective,
       grid: newGrid,
-      score,
-      rescuedCount,
+      score: currentScore,
+      rescuedCount: currentRescued,
       colorHuntCount: bubblesPoppedCount
     });
 
     if (isComplete) {
-      const earnedStars = calculateStars(score, levelConfig.starThresholds);
+      const earnedStars = calculateStars(currentScore, levelConfig.starThresholds);
 
       setCompletedLevels(prev => {
         const existing = prev.find(l => l.levelNumber === levelNumber);
         if (existing) {
           return prev.map(l => l.levelNumber === levelNumber
-            ? { ...l, stars: Math.max(l.stars, earnedStars), score: Math.max(l.score, score) }
+            ? { ...l, stars: Math.max(l.stars, earnedStars), score: Math.max(l.score, currentScore) }
             : l
           );
         }
-        return [...prev, { levelNumber, stars: earnedStars, score }];
+        return [...prev, { levelNumber, stars: earnedStars, score: currentScore }];
       });
 
       if (levelConfig.isDaily) {
@@ -345,8 +348,8 @@ export default function App() {
         localStorage.setItem('bubble_blast_daily_streak', currentStreak.toString());
 
         const prevBest = parseInt(localStorage.getItem('bubble_blast_daily_best_score') || '0', 10);
-        if (score > prevBest) {
-          localStorage.setItem('bubble_blast_daily_best_score', score.toString());
+        if (currentScore > prevBest) {
+          localStorage.setItem('bubble_blast_daily_best_score', currentScore.toString());
         }
 
         // Grant daily bounty: +500 Coins & +1 Rainbow booster
@@ -369,9 +372,9 @@ export default function App() {
           levelNumber,
           shotsUsed: levelConfig.shots - shotsRemaining,
           bubblesPopped: bubblesPoppedCount,
-          score,
+          score: currentScore,
           bestCombo,
-          rescuedObjects: rescuedCount,
+          rescuedObjects: currentRescued,
           boostersUsed,
           completed: true
         });
