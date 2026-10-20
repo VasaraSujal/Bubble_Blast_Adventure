@@ -135,7 +135,7 @@ export default function App() {
       setCurrentView('landing');
     } else if (clean.startsWith('/game')) {
       const match = clean.match(/\/game\/(\d+)/);
-      const lvl = match ? parseInt(match[1], 10) : 1;
+      const lvl = match ? parseInt(match[1], 10) : (highestUnlockedLevel || 1);
       loadLevel(lvl);
     } else if (clean === '/login' || clean === '/register') {
       setIsAuthOpen(true);
@@ -177,7 +177,10 @@ export default function App() {
       const me = await authService.getMe();
       if (me) {
         setUser(me);
-        if (me.currentLevel) setHighestUnlockedLevel(me.currentLevel);
+        if (me.currentLevel) {
+          setHighestUnlockedLevel(me.currentLevel);
+          setLevelNumber(me.currentLevel);
+        }
         if (me.completedLevels) setCompletedLevels(me.completedLevels);
         if (me.totalScore) setScore(me.totalScore);
         if (me.boosterInventory) setBoosterInventory(me.boosterInventory);
@@ -659,7 +662,7 @@ export default function App() {
             <button
               onClick={() => {
                 audioManager.playButtonClick();
-                loadLevel(levelNumber);
+                loadLevel(highestUnlockedLevel || levelNumber || 1);
               }}
               className="cartoon-btn btn-gold"
               style={{ padding: '0.32rem 0.7rem', fontSize: '0.8rem' }}
@@ -871,11 +874,11 @@ export default function App() {
               className="mobile-nav-item"
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                loadLevel(levelNumber);
+                loadLevel(highestUnlockedLevel || levelNumber || 1);
               }}
             >
               <Play size={20} color="#fbbf24" fill="currentColor" />
-              <span>Play Level {levelNumber}</span>
+              <span>Play Level {highestUnlockedLevel || levelNumber || 1}</span>
             </div>
 
             <div
@@ -963,7 +966,7 @@ export default function App() {
       {currentView === 'landing' ? (
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
           <LandingPage
-            onPlayNow={() => loadLevel(levelNumber)}
+            onPlayNow={() => loadLevel(highestUnlockedLevel || levelNumber || 1)}
             onOpenLeaderboard={() => navigateTo('/leaderboard')}
             onOpenAchievements={() => navigateTo('/achievements')}
             onOpenLevelSelect={() => navigateTo('/levels')}
@@ -1230,7 +1233,10 @@ export default function App() {
         onClose={() => closeModal(setIsAuthOpen)}
         onAuthSuccess={(authedUser) => {
           setUser(authedUser);
-          if (authedUser.currentLevel) setHighestUnlockedLevel(authedUser.currentLevel);
+          if (authedUser.currentLevel) {
+            setHighestUnlockedLevel(authedUser.currentLevel);
+            setLevelNumber(authedUser.currentLevel);
+          }
           if (authedUser.completedLevels) setCompletedLevels(authedUser.completedLevels);
         }}
       />
