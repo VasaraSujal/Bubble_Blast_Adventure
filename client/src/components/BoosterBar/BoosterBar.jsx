@@ -54,18 +54,16 @@ export default function BoosterBar({
 
   return (
     <div
-      className="glass-panel"
+      className="booster-bar-container"
       style={{
         display: 'flex',
         gap: '0.45rem',
-        padding: '0.35rem 0.65rem',
+        padding: '0.2rem 0.5rem',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: '0.35rem',
         maxWidth: '480px',
         width: '100%',
-        border: '2px solid rgba(245, 158, 11, 0.35)',
-        background: 'linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%)'
+        margin: '0.2rem auto 0 auto'
       }}
     >
       {boosterList.map(b => {
