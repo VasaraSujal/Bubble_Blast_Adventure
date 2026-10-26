@@ -25,13 +25,17 @@ export default function PauseModal({
       }}
     >
       <div
-        className="glass-panel"
+        className="stone-tablet-slab"
         style={{
           maxWidth: '380px',
           width: '100%',
+          background: 'linear-gradient(180deg, #3b5278 0%, #253552 60%, #172235 100%)',
+          borderRadius: '1.75rem',
+          border: '4px solid #38bdf8',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 25px rgba(56, 189, 248, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.25)',
           padding: '2rem 1.5rem',
           textAlign: 'center',
-          border: '3px solid #38bdf8'
+          position: 'relative'
         }}
       >
         <span style={{ fontSize: '3rem', display: 'block', marginBottom: '0.5rem' }}>
