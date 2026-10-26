@@ -4,6 +4,7 @@ import BubbleCanvas from './components/BubbleBoard/BubbleCanvas';
 import BoosterBar from './components/BoosterBar/BoosterBar';
 import MascotBuddy from './components/Companion/MascotBuddy';
 import StarScorePanel from './components/GameHUD/StarScorePanel';
+import ArcadeTopHUD from './components/GameHUD/ArcadeTopHUD';
 import LandingPage from './components/Landing/LandingPage';
 import AuthModal from './components/Auth/AuthModal';
 import DashboardModal from './components/Dashboard/DashboardModal';
@@ -522,31 +523,55 @@ export default function App() {
 
   return (
     <div
-      className="game-viewport"
+      className={`game-viewport ${currentView === 'game' ? 'is-game-view' : ''}`}
       style={{
-        height: '100vh',
-        maxHeight: '100vh',
+        height: '100dvh',
+        maxHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '0.35rem 0.6rem',
+        padding: currentView === 'game' ? '0' : '0.35rem 0.6rem',
         overflow: 'hidden',
         position: 'relative'
       }}
     >
       {/* Ambient Floating Bubble Atmosphere */}
-      <AmbientBubbles count={16} />
+      {currentView !== 'game' && <AmbientBubbles count={16} />}
 
-      {/* Top Universal Navbar / In-Game HUD Header */}
-      <header className="glass-panel app-header">
-        {/* Brand */}
-        <div
-          className="header-brand-container"
-          onClick={() => {
+      {/* Top Universal Navbar / In-Game Arcade HUD */}
+      {currentView === 'game' ? (
+        <ArcadeTopHUD
+          levelNumber={levelNumber}
+          score={score}
+          starThresholds={levelConfig.starThresholds}
+          objective={levelConfig.objective}
+          rescuedCount={rescuedCount}
+          combo={combo}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+          onOpenSettings={() => {
             audioManager.playButtonClick();
-            setCurrentView('landing');
+            setIsSettingsOpen(true);
           }}
-        >
+          onOpenPause={() => {
+            audioManager.playButtonClick();
+            setIsPauseOpen(true);
+          }}
+          onOpenMap={() => {
+            audioManager.playButtonClick();
+            setIsLevelSelectOpen(true);
+          }}
+        />
+      ) : (
+        <header className="glass-panel app-header">
+          {/* Brand */}
+          <div
+            className="header-brand-container"
+            onClick={() => {
+              audioManager.playButtonClick();
+              setCurrentView('landing');
+            }}
+          >
           <div
             style={{
               width: '28px',
@@ -840,6 +865,7 @@ export default function App() {
           </button>
         </div>
       </header>
+      )}
 
       {/* Mobile Navigation Drawer (Section 78) */}
       {isMobileMenuOpen && (
@@ -1149,65 +1175,26 @@ export default function App() {
               onUseBooster={handleUseBooster}
             />
 
-            {/* Mobile-Only Tactical Controls (Undo, Hint, Swap) */}
-            <div
-              className="mobile-tactical-bar"
-              style={{
-                display: 'none',
-                gap: '0.4rem',
-                marginTop: '0.25rem',
-                width: '100%',
-                maxWidth: '480px',
-                justifyContent: 'center'
-              }}
-            >
-              <button
-                onClick={() => {
-                  audioManager.playButtonClick();
-                  handleSwapBubbles();
-                }}
-                className="cartoon-btn btn-gold"
-                style={{ padding: '0.22rem 0.5rem', fontSize: '0.72rem', flex: 1, height: '28px' }}
-                title="Swap loaded bubble"
-              >
-                <RefreshCw size={11} /> Swap
-              </button>
-
-              <button
-                onClick={handleUndo}
-                disabled={historyRef.current.length === 0}
-                className="cartoon-btn btn-cyan"
-                style={{ padding: '0.22rem 0.5rem', fontSize: '0.72rem', flex: 1, height: '28px' }}
-                title="Undo last shot"
-              >
-                <Undo2 size={11} /> Undo
-              </button>
-
-              <button
-                onClick={handleHint}
-                className="cartoon-btn btn-emerald"
-                style={{ padding: '0.22rem 0.5rem', fontSize: '0.72rem', flex: 1, height: '28px' }}
-                title="Show Aim Hint"
-              >
-                <Lightbulb size={11} /> Hint
-              </button>
-            </div>
-
             {hintMessage && (
               <div
                 style={{
-                  padding: '0.2rem 0.5rem',
-                  fontSize: '0.7rem',
+                  position: 'absolute',
+                  top: '12px',
+                  zIndex: 20,
+                  padding: '0.35rem 0.8rem',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
                   color: '#fbbf24',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                  borderRadius: '0.4rem',
+                  background: 'rgba(15, 23, 42, 0.92)',
+                  border: '1.5px solid #f59e0b',
+                  borderRadius: '1rem',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.6)',
                   textAlign: 'center',
-                  marginTop: '0.2rem',
-                  maxWidth: '380px'
+                  pointerEvents: 'none',
+                  animation: 'floatWobble 2s ease-in-out infinite'
                 }}
               >
-                {hintMessage}
+                💡 {hintMessage}
               </div>
             )}
           </div>
