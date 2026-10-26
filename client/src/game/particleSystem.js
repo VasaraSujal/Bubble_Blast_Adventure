@@ -116,18 +116,52 @@ export class ParticleSystem {
   }
 
   /**
-   * Animate a freed baby dragon swooping towards safety
+   * Animate a freed baby dragon swooping up towards top HUD with golden trail sparkles
    */
-  spawnFreedDragon(startX, startY) {
+  spawnFreedDragon(startX, startY, targetX = 145, targetY = 15) {
     this.rescuedDragons.push({
+      startX,
+      startY,
       x: startX,
       y: startY,
-      vx: (Math.random() - 0.5) * 2,
-      vy: -4, // Flaps up first, then curves
+      targetX,
+      targetY,
+      progress: 0,
+      speed: 0.016, // Arrives at HUD in ~60 frames
+      wingFlap: 0,
+      scale: 1.0,
       alpha: 1,
-      scale: 1.3,
-      decay: 0.015
+      controlX: startX + (Math.random() - 0.5) * 110,
+      controlY: Math.min(startY - 80, 90)
     });
+
+    // Initial liberation burst with expanding shockwave
+    this.shockwaves.push({
+      x: startX,
+      y: startY,
+      radius: 12,
+      maxRadius: 48,
+      color: '#22c55e',
+      lineWidth: 3.5,
+      alpha: 1
+    });
+
+    // Spawn golden & emerald celebration sparkles
+    for (let i = 0; i < 20; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 4.5;
+      this.particles.push({
+        x: startX,
+        y: startY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 1.2,
+        radius: 2 + Math.random() * 3,
+        color: i % 3 === 0 ? '#fbbf24' : i % 3 === 1 ? '#4ade80' : '#38bdf8',
+        alpha: 1,
+        decay: 0.022,
+        gravity: 0.06
+      });
+    }
   }
 
   /**
@@ -186,15 +220,72 @@ export class ParticleSystem {
       }
     }
 
-    // 5. Update freed dragons
+    // 5. Update flying freed baby dragons along Bezier arc toward HUD
     for (let i = this.rescuedDragons.length - 1; i >= 0; i--) {
       const rd = this.rescuedDragons[i];
-      rd.x += rd.vx;
-      rd.y += rd.vy;
-      rd.vy += 0.15; // Arc downward
-      rd.alpha -= rd.decay;
+      rd.progress += rd.speed;
+      rd.wingFlap += 0.45; // Fast energetic flutter
 
-      if (rd.alpha <= 0) {
+      // Quadratic Bezier interpolation
+      const t = Math.min(1, rd.progress);
+      const invT = 1 - t;
+      rd.x = invT * invT * rd.startX + 2 * invT * t * rd.controlX + t * t * rd.targetX;
+      rd.y = invT * invT * rd.startY + 2 * invT * t * rd.controlY + t * t * rd.targetY;
+      
+      rd.scale = 1 + Math.sin(rd.wingFlap * 0.5) * 0.12;
+
+      // Drop fairy dust sparkles along flight trajectory
+      if (Math.random() > 0.3) {
+        this.particles.push({
+          x: rd.x + (Math.random() - 0.5) * 10,
+          y: rd.y + (Math.random() - 0.5) * 10,
+          vx: (Math.random() - 0.5) * 1.2,
+          vy: 0.6 + Math.random() * 1.5,
+          radius: 1.5 + Math.random() * 2.2,
+          color: Math.random() > 0.5 ? '#fde047' : '#86efac',
+          alpha: 0.9,
+          decay: 0.035,
+          gravity: 0.02
+        });
+      }
+
+      // Reached Top HUD Counter Badge!
+      if (rd.progress >= 1.0) {
+        this.shockwaves.push({
+          x: rd.targetX,
+          y: rd.targetY,
+          radius: 8,
+          maxRadius: 36,
+          color: '#fbbf24',
+          lineWidth: 3,
+          alpha: 1
+        });
+        for (let k = 0; k < 16; k++) {
+          const angle = Math.random() * Math.PI * 2;
+          const spd = 2 + Math.random() * 3.5;
+          this.particles.push({
+            x: rd.targetX,
+            y: rd.targetY,
+            vx: Math.cos(angle) * spd,
+            vy: Math.sin(angle) * spd,
+            radius: 2 + Math.random() * 2.5,
+            color: '#fbbf24',
+            alpha: 1,
+            decay: 0.03,
+            gravity: 0.04
+          });
+        }
+
+        // Pulse the HTML rescue badge in the top HUD
+        if (typeof document !== 'undefined') {
+          const badge = document.getElementById('arcade-hud-rescue-badge');
+          if (badge) {
+            badge.classList.remove('rescue-badge-pop');
+            void badge.offsetWidth; // trigger reflow
+            badge.classList.add('rescue-badge-pop');
+          }
+        }
+
         this.rescuedDragons.splice(i, 1);
       }
     }
@@ -227,16 +318,99 @@ export class ParticleSystem {
       ctx.restore();
     }
 
-    // 3. Draw freed baby dragons flapping
+    // 3. Draw freed baby dragons flapping upwards to safety
     for (const rd of this.rescuedDragons) {
       ctx.save();
       ctx.globalAlpha = Math.max(0, rd.alpha);
-      ctx.font = `${Math.floor(28 * rd.scale)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.shadowColor = '#fbbf24';
-      ctx.shadowBlur = 12;
-      ctx.fillText('🦕', rd.x, rd.y);
+      ctx.translate(rd.x, rd.y);
+      const s = rd.scale || 1.2;
+      ctx.scale(s, s);
+
+      const wingY = Math.sin(rd.wingFlap) * 6;
+      const wingAngle = Math.sin(rd.wingFlap) * 0.45;
+
+      // Glowing Translucent Fairy Wings
+      ctx.save();
+      ctx.fillStyle = 'rgba(254, 240, 138, 0.85)';
+      ctx.shadowColor = '#fde047';
+      ctx.shadowBlur = 10;
+
+      // Left Wing
+      ctx.save();
+      ctx.translate(-10, -2);
+      ctx.rotate(-0.3 + wingAngle);
+      ctx.beginPath();
+      ctx.ellipse(0, wingY * 0.5, 9, 15, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Right Wing
+      ctx.save();
+      ctx.translate(10, -2);
+      ctx.rotate(0.3 - wingAngle);
+      ctx.beginPath();
+      ctx.ellipse(0, wingY * 0.5, 9, 15, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.restore();
+
+      // Chubby Green Baby Body & Head
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(0, 0, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Soft Yellow Tummy
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.ellipse(2, 3, 7, 9, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Yellow Crest Spines
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.moveTo(-6, -11);
+      ctx.lineTo(0, -18);
+      ctx.lineTo(6, -11);
+      ctx.closePath();
+      ctx.fill();
+
+      // Rosy Cheeks
+      ctx.fillStyle = 'rgba(244, 63, 94, 0.65)';
+      ctx.beginPath();
+      ctx.arc(-7, 2, 3, 0, Math.PI * 2);
+      ctx.arc(7, 2, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Big Happy Cartoon Eyes
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-4, -3, 3.8, 0, Math.PI * 2);
+      ctx.arc(4, -3, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(-3.5, -3, 2.2, 0, Math.PI * 2);
+      ctx.arc(4.5, -3, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Specular eye catchlight
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-4.5, -4.5, 1.2, 0, Math.PI * 2);
+      ctx.arc(3.5, -4.5, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Golden Halo Glow
+      ctx.beginPath();
+      ctx.ellipse(0, -20, 11, 3.5, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 1.8;
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+
       ctx.restore();
     }
 

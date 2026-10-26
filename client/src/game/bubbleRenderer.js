@@ -189,19 +189,103 @@ export const drawBubble = (
   const isRainbow = colorKey === 'rainbow' || (typeof bubbleData === 'object' && bubbleData.isRainbow);
 
   if (isRescueTarget) {
-    // Golden egg rim glow
+    // Crystal Capsule with Trapped Baby Dragon (Reference Game Aesthetics)
     ctx.save();
+
+    // 1. Outer Golden Capsule Ring
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.78, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2.2;
+    ctx.shadowColor = '#f59e0b';
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 2. Crystal Sphere Translucent Depth
+    const crystalGrad = ctx.createRadialGradient(-r * 0.2, -r * 0.2, 1, 0, 0, r * 0.75);
+    crystalGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+    crystalGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.15)');
+    crystalGrad.addColorStop(1, 'rgba(2, 6, 23, 0.55)');
+    ctx.fillStyle = crystalGrad;
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.75, 0, Math.PI * 2);
-    ctx.strokeStyle = '#fbbf24';
-    ctx.lineWidth = 2.5;
+    ctx.fill();
+
+    // 3. Cute Cartoon Baby Dragon Face
+    // Head Horns / Crest Spines
+    ctx.fillStyle = '#f59e0b';
+    [-r * 0.32, 0, r * 0.32].forEach((hx, idx) => {
+      ctx.beginPath();
+      const hy = -r * 0.42;
+      ctx.moveTo(hx - 3, hy + 4);
+      ctx.lineTo(hx, hy - 5);
+      ctx.lineTo(hx + 3, hy + 4);
+      ctx.closePath();
+      ctx.fill();
+    });
+
+    // Chubby Green Head
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.04, r * 0.46, r * 0.42, 0, 0, Math.PI * 2);
+    const dragonGrad = ctx.createRadialGradient(-r * 0.1, -r * 0.1, 2, 0, r * 0.04, r * 0.46);
+    dragonGrad.addColorStop(0, '#86efac');
+    dragonGrad.addColorStop(0.5, '#22c55e');
+    dragonGrad.addColorStop(1, '#15803d');
+    ctx.fillStyle = dragonGrad;
+    ctx.fill();
+
+    // Rosy Cheeks
+    ctx.fillStyle = 'rgba(244, 63, 94, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.26, r * 0.12, r * 0.1, r * 0.06, 0, 0, Math.PI * 2);
+    ctx.ellipse(r * 0.26, r * 0.12, r * 0.1, r * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Big Cartoon Eyes
+    // Left eye
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.16, -r * 0.04, r * 0.14, r * 0.18, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-r * 0.14, -r * 0.03, r * 0.09, 0, Math.PI * 2);
+    ctx.fillStyle = '#0f172a';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-r * 0.16, -r * 0.06, r * 0.04, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+
+    // Right eye
+    ctx.beginPath();
+    ctx.ellipse(r * 0.16, -r * 0.04, r * 0.14, r * 0.18, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(r * 0.14, -r * 0.03, r * 0.09, 0, Math.PI * 2);
+    ctx.fillStyle = '#0f172a';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(r * 0.12, -r * 0.06, r * 0.04, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+
+    // Cute Smiling Mouth
+    ctx.beginPath();
+    ctx.arc(0, r * 0.16, r * 0.14, 0.2, Math.PI - 0.2);
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = '#14532d';
     ctx.stroke();
 
-    // Cute Baby Dragon Silhouette & Eyes
-    ctx.font = `${Math.floor(r * 1.05)}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🦕', 0, 1);
+    // 4. Glass Capsule Specular Glint
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.32, -r * 0.35, r * 0.24, r * 0.12, -Math.PI / 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.fill();
+
     ctx.restore();
   } else if (isBomb) {
     // Bomb Hazard Icon
