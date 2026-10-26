@@ -165,7 +165,92 @@ h1, h2, h3, h4, .font-heading {
 }
 
 .star-slam {
-  animation: starSlam 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: starSlam 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.35) forwards;
+}
+
+@keyframes starSlam {
+  0% {
+    transform: scale(0) rotate(-60deg);
+    opacity: 0;
+    filter: brightness(2.5) drop-shadow(0 0 30px #f59e0b);
+  }
+  55% {
+    transform: scale(1.45) rotate(10deg);
+    opacity: 1;
+    filter: brightness(1.8) drop-shadow(0 0 25px #fbbf24);
+  }
+  75% {
+    transform: scale(0.9) rotate(-4deg);
+    filter: brightness(1.2) drop-shadow(0 0 18px #fbbf24);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.9));
+  }
+}
+
+@keyframes starRayRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.star-rays {
+  animation: starRayRotate 8s linear infinite;
+}
+
+@keyframes rescueBadgePulse {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35) rotate(-6deg);
+    filter: drop-shadow(0 0 18px #22c55e);
+  }
+  60% {
+    transform: scale(0.92) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.rescue-badge-pop {
+  animation: rescueBadgePulse 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pathEnergyDash {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+.saga-path-active {
+  stroke-dasharray: 8 8;
+  animation: pathEnergyDash 1.4s linear infinite;
+}
+
+@keyframes pedestalUnlock {
+  0% {
+    transform: scale(0.8);
+    filter: brightness(2) drop-shadow(0 0 25px #fbbf24);
+  }
+  50% {
+    transform: scale(1.25);
+    filter: brightness(1.8) drop-shadow(0 0 35px #f59e0b);
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.6));
+  }
+}
+
+.pedestal-unlocked {
+  animation: pedestalUnlock 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Custom Scrollbar for level select and leaderboard */
@@ -196,6 +281,27 @@ h1, h2, h3, h4, .font-heading {
   overflow: hidden;
 }
 
+/* Full-Screen Edge-to-Edge Mode during Active Gameplay */
+.game-viewport.is-game-view {
+  padding: 0 !important;
+  background: #020713;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  justify-content: flex-start !important;
+}
+
+/* Seamless Top In-Game Header Overlay */
+.app-header.in-game-header {
+  border-radius: 0 !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(180deg, rgba(2, 7, 19, 0.95) 0%, rgba(2, 7, 19, 0.78) 75%, transparent 100%) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(8px) !important;
+  padding: 0.35rem 0.65rem 0.45rem 0.65rem !important;
+  z-index: 30;
+}
+
 .game-main-area {
   flex: 1;
   display: flex;
@@ -205,8 +311,46 @@ h1, h2, h3, h4, .font-heading {
   max-width: 1060px;
   margin: 0 auto;
   width: 100%;
+  height: 100%;
   overflow: hidden;
   padding: 0.15rem 0.5rem;
+  min-height: 0;
+}
+
+/* Borderless Canvas Full-Bleed Scaling */
+.bubble-canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  position: relative;
+}
+
+.bubble-board-canvas {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 480 / 640;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.65));
+}
+
+/* Sleek Floating Booster Bar */
+.booster-bar-container {
+  display: flex;
+  gap: 0.45rem;
+  padding: 0.2rem 0.5rem;
+  justify-content: center;
+  align-items: center;
+  max-width: 480px;
+  width: 100%;
+  z-index: 10;
 }
 
 .game-sidebar {
@@ -469,7 +613,7 @@ input, textarea {
   }
 }
 
-/* Strict Mobile 1-Screen Viewport Fix (Sections 50, 80) */
+/* Strict Mobile Full-Screen Layout Fix */
 @media (max-width: 768px) {
   .game-viewport {
     height: 100dvh !important;
@@ -479,22 +623,27 @@ input, textarea {
     justify-content: flex-start !important;
   }
 
+  .game-viewport.is-game-view {
+    padding: 0 !important;
+  }
+
   .game-main-area {
-    flex: 1 !important;
+    flex: 1 1 0 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0.25rem !important;
+    gap: 0.15rem !important;
     width: 100% !important;
-    max-width: 480px !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
     overflow: hidden !important;
-    padding: 0.2rem 0 !important;
+    padding: 0 !important;
     min-height: 0 !important;
+    height: 100% !important;
   }
 
-  /* Completely hide bulky side panels on mobile so canvas & boosters fit 100% into single screen */
+  /* Completely hide bulky side panels on mobile so canvas gets 100% of the viewport */
   .game-sidebar {
     display: none !important;
   }
@@ -503,7 +652,7 @@ input, textarea {
     display: none !important;
   }
 
-  /* Dual-Tier Responsive Header for Mobile Screens (Sections 50, 78, 80) */
+  /* Streamlined Responsive Header for Mobile Screens */
   .app-header {
     display: flex !important;
     flex-direction: row !important;
@@ -517,12 +666,17 @@ input, textarea {
     overflow: hidden !important;
   }
 
+  .app-header.in-game-header {
+    border-radius: 0 !important;
+    padding: 0.25rem 0.45rem 0.35rem 0.45rem !important;
+  }
+
   /* Row 1 Left: Brand */
   .header-brand-container {
     order: 1 !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
-    max-width: calc(100% - 105px) !important;
+    max-width: calc(100% - 95px) !important;
     overflow: hidden !important;
   }
 
@@ -573,12 +727,33 @@ input, textarea {
     font-size: 0.72rem !important;
   }
 
+  /* Hide the squishing bottom button bar */
   .mobile-tactical-bar {
-    display: flex !important;
+    display: none !important;
   }
 
+  /* Full-bleed Canvas on Mobile without card squish! */
   .bubble-board-canvas {
-    max-height: min(54vh, calc(100dvh - 170px)) !important;
+    width: auto !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: calc(100dvh - 90px) !important;
+    aspect-ratio: 480 / 640 !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.65)) !important;
+  }
+
+  /* Compact Floating Booster Buttons on Mobile */
+  .booster-bar-container {
+    padding: 0.15rem 0.35rem 0.25rem 0.35rem !important;
+    margin: 0 auto !important;
+    gap: 0.3rem !important;
+  }
+
+  .booster-bar-container button {
+    padding: 0.22rem 0.15rem !important;
+    font-size: 0.68rem !important;
+    border-radius: 0.6rem !important;
   }
 }
 
@@ -708,5 +883,52 @@ input, textarea {
   font-size: 0.95rem;
   line-height: 1.6;
 }
+
+/* Phase 5 Polish & Keyframe Animations */
+@keyframes bounceGuide {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.emerald-gem-play-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.emerald-gem-play-btn:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.5) !important;
+}
+
+.stone-tablet-slab {
+  animation: modalPopIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.saga-path-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.saga-path-scroll::-webkit-scrollbar-track {
+  background: rgba(7, 22, 44, 0.3);
+}
+.saga-path-scroll::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.4);
+  border-radius: 9999px;
+}
+
 
 

@@ -28,9 +28,9 @@ export const getLevelDefinition = (levelNumber) => {
     rows = 3;
     shots = 30; // generous shots
     objective = {
-      type: 'clear_all',
-      target: 0,
-      description: 'Tutorial: Match 3 or more bubbles to clear the grid!'
+      type: 'rescue',
+      target: 1,
+      description: 'Tutorial: Match 3 bubbles to rescue your baby dragon friend!'
     };
   } else if (levelNumber <= 5) {
     difficulty = 'tutorial';
@@ -136,11 +136,11 @@ export const getLevelDefinition = (levelNumber) => {
     };
   }
 
-  // Level 1: Curated, instant-fun tutorial with obvious paired clusters
+  // Level 1: Curated, instant-fun tutorial with obvious paired clusters and a trapped dragon friend!
   if (levelNumber === 1) {
     const curatedL1 = [
       ['red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue'],
-      ['red', 'red', 'blue', 'blue', 'blue', 'red', 'red'],
+      ['red', 'red', 'blue', { color: 'blue', hasRescueTarget: true }, 'blue', 'red', 'red'],
       ['red', 'red', 'red', 'red', 'blue', 'blue', 'blue', 'blue']
     ];
     return {
