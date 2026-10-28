@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Star, Settings, Volume2, VolumeX, Pause, Sparkles } from 'lucide-react';
+import { Star, Settings, Volume2, VolumeX, Pause, Sparkles, Home } from 'lucide-react';
 
 /**
  * ArcadeTopHUD
@@ -7,7 +7,7 @@ import { Star, Settings, Volume2, VolumeX, Pause, Sparkles } from 'lucide-react'
  * Features:
  * - Left: Hexagonal stone emblem with Golden Dragon Key / Quest Goal
  * - Center: Trapped Baby Dragon Target + Live 3-Star Gauge Bar with Star Pins
- * - Right: Carved Stone Settings / Sound buttons
+ * - Right: Carved Stone Settings / Sound / Home buttons
  * Satisfies PDF Sections 26, 27, 34, 79, 80, 101.
  */
 export default function ArcadeTopHUD({
@@ -21,7 +21,8 @@ export default function ArcadeTopHUD({
   onToggleSound,
   onOpenSettings,
   onOpenPause,
-  onOpenMap
+  onOpenMap,
+  onGoHome
 }) {
   const [t1 = 500, t2 = 1000, t3 = 1500] = starThresholds;
 
@@ -367,6 +368,30 @@ export default function ArcadeTopHUD({
         >
           <Settings size={20} color="#f8fafc" />
         </button>
+
+        {/* Home Screen Button */}
+        {onGoHome && (
+          <button
+            onClick={onGoHome}
+            title="Return to Home Screen"
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '0.65rem',
+              background: 'linear-gradient(180deg, #0284c7 0%, #0369a1 70%, #0c4a6e 100%)',
+              border: '2.5px solid #38bdf8',
+              boxShadow: '0 4px 12px rgba(2, 132, 199, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              cursor: 'pointer',
+              transition: 'transform 0.1s active'
+            }}
+          >
+            <Home size={19} color="#ffffff" />
+          </button>
+        )}
       </div>
     </div>
   );

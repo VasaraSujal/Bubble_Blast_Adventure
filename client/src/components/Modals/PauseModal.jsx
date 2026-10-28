@@ -1,12 +1,13 @@
 import React from 'react';
-import { Play, RotateCcw, List } from 'lucide-react';
+import { Play, RotateCcw, List, Home } from 'lucide-react';
 
 export default function PauseModal({
   isOpen,
   levelNumber = 1,
   onResume,
   onRestart,
-  onLevelSelect
+  onLevelSelect,
+  onGoHome
 }) {
   if (!isOpen) return null;
 
@@ -77,6 +78,22 @@ export default function PauseModal({
           >
             <List size={18} /> Level Select
           </button>
+
+          {onGoHome && (
+            <button
+              onClick={onGoHome}
+              className="cartoon-btn"
+              style={{
+                fontSize: '0.95rem',
+                padding: '0.65rem',
+                background: 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)',
+                border: '2px solid #38bdf8',
+                color: '#ffffff'
+              }}
+            >
+              <Home size={18} /> Return to Home
+            </button>
+          )}
         </div>
       </div>
     </div>
