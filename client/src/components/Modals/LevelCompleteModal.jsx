@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Star, Trophy, ArrowRight, RotateCcw, List, Sparkles } from 'lucide-react';
+import { Star, Trophy, ArrowRight, RotateCcw, List, Sparkles, Home } from 'lucide-react';
 import { audioManager } from '../../utils/audioManager';
 
 export default function LevelCompleteModal({
@@ -16,7 +16,8 @@ export default function LevelCompleteModal({
   rescuedCount = 0,
   onNextLevel,
   onReplay,
-  onLevelSelect
+  onLevelSelect,
+  onGoHome
 }) {
   const [revealedStars, setRevealedStars] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
@@ -390,16 +391,17 @@ export default function LevelCompleteModal({
               }}
               className="cartoon-btn"
               style={{
+                flex: 1,
                 padding: '0.75rem',
                 background: 'linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%)',
                 color: '#ffffff',
                 borderRadius: '0.85rem',
                 fontWeight: 700,
-                fontSize: '0.9rem',
+                fontSize: '0.85rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.4rem',
+                gap: '0.35rem',
                 boxShadow: '0 4px 0 #075985',
                 border: '1.5px solid #7dd3fc',
                 cursor: 'pointer'
@@ -408,6 +410,35 @@ export default function LevelCompleteModal({
               <List size={16} />
               <span>SAGA MAP</span>
             </button>
+
+            {onGoHome && (
+              <button
+                onClick={() => {
+                  audioManager.playButtonClick();
+                  onGoHome();
+                }}
+                className="cartoon-btn"
+                title="Return to Home Screen"
+                style={{
+                  padding: '0.75rem 0.9rem',
+                  background: 'linear-gradient(180deg, #10b981 0%, #059669 50%, #047857 100%)',
+                  color: '#ffffff',
+                  borderRadius: '0.85rem',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  boxShadow: '0 4px 0 #064e3b',
+                  border: '1.5px solid #6ee7b7',
+                  cursor: 'pointer'
+                }}
+              >
+                <Home size={16} />
+                <span>HOME</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

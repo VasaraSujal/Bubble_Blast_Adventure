@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCcw, PlusCircle, List, AlertTriangle } from 'lucide-react';
+import { RotateCcw, PlusCircle, List, AlertTriangle, Home } from 'lucide-react';
 
 export default function LevelFailedModal({
   isOpen,
@@ -8,7 +8,8 @@ export default function LevelFailedModal({
   hasExtraShotsBooster = true,
   onRetry,
   onUseExtraShots,
-  onLevelSelect
+  onLevelSelect,
+  onGoHome
 }) {
   if (!isOpen) return null;
 
@@ -98,6 +99,22 @@ export default function LevelFailedModal({
           >
             <List size={18} /> Level Select
           </button>
+
+          {onGoHome && (
+            <button
+              onClick={onGoHome}
+              className="cartoon-btn"
+              style={{
+                fontSize: '0.95rem',
+                padding: '0.65rem',
+                background: 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)',
+                border: '2px solid #38bdf8',
+                color: '#ffffff'
+              }}
+            >
+              <Home size={18} /> Return to Home
+            </button>
+          )}
         </div>
       </div>
     </div>
