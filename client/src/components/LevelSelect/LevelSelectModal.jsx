@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import confetti from 'canvas-confetti';
-import { Star, Lock, X, Settings, Heart, Sparkles, Trophy } from 'lucide-react';
+import { Heart, Star, X, Compass, Maximize2, Minimize2 } from 'lucide-react';
 import { TOTAL_PRIMARY_LEVELS, getLevelDefinition } from '../../data/levels/levelRegistry';
 import { audioManager } from '../../utils/audioManager';
 import StagePreviewModal from '../Modals/StagePreviewModal';
+import { SAGA_SPIRAL_COORDS, generateSplinePath, getSteppingStones } from './sagaSpiralCoords';
 
 /**
- * Floating Sky-Island Saga Map
- * Inspired by reference mobile game Overworld Map (Screenshot 3 & 4).
+ * Floating Sky-Island Spiral Saga Map
+ * Premium, realistic overworld adventure map inspired by top casual mobile games (Bubble Shooter: Dragon Pop).
  * Features:
- * - Stunning panoramic aerial valley & winding glacial river landscape background
- * - 3D Floating Mountain Crag Island Pedestals with realistic rock facets & moss
- * - Floating stepping stone pebbles & magical fairy dust energy trails connecting islands
- * - 3D Baby Dinosaur mascot walking & hopping across stepping stones on level advancement
- * - Ancient Dragon Egg Shrine Altar at the summit
- * - Top header with Lives (❤️ 5), Stars counter, and settings
- * - Clicking an unlocked pedestal opens the Stone Tablet StagePreviewModal
- * Satisfies PDF Sections 32, 33, 34, 53, 55, 76, 101.
+ * - High-resolution floating sky-island archipelago (saga_map_spiral.jpg: 1376x768)
+ * - 40 beautifully spaced levels in a natural spiral leading to the Golden Dragon Shrine
+ * - Vector SVG rendering with zero-clipping guarantee across all screen resolutions
+ * - 3D Gemstone Rune Medallions with metallic rims, milestone crowns, and star formations
+ * - 3D Baby Dino mascot companion hopping along the spiral path on level advance
+ * - Interactive StagePreviewModal on level click (Section 32)
  */
 export default function LevelSelectModal({
   isOpen,
@@ -29,42 +28,66 @@ export default function LevelSelectModal({
   const [previewLevel, setPreviewLevel] = useState(null);
   const [avatarLevel, setAvatarLevel] = useState(unlockedLevel);
   const [isTraveling, setIsTraveling] = useState(false);
-  const [travelProgress, setTravelProgress] = useState(1); // 0 to 1
+  const [travelProgress, setTravelProgress] = useState(1);
+  const [isFitScreen, setIsFitScreen] = useState(true);
+  const scrollContainerRef = useRef(null);
 
   // Star lookup map
-  const starsMap = {};
-  let totalStarsEarned = 0;
-  completedLevels.forEach(lvl => {
-    starsMap[lvl.levelNumber] = lvl.stars || 0;
-    totalStarsEarned += lvl.stars || 0;
-  });
+  const starsMap = useMemo(() => {
+    const map = {};
+    completedLevels.forEach(lvl => {
+      map[lvl.levelNumber] = lvl.stars || 0;
+    });
+    return map;
+  }, [completedLevels]);
 
-  // Generate levels list up to TOTAL_PRIMARY_LEVELS (40 levels)
-  const levels = Array.from({ length: TOTAL_PRIMARY_LEVELS }, (_, i) => i + 1);
+  const totalStarsEarned = useMemo(() => {
+    return completedLevels.reduce((sum, lvl) => sum + (lvl.stars || 0), 0);
+  }, [completedLevels]);
 
-  // Gemstone Rune Themes matching reference game
+  // Gemstone Rune Themes matching vibrant fantasy aesthetic
   const RUNE_THEMES = [
-    { name: 'Amber Gold', main: '#f59e0b', light: '#fef08a', dark: '#b45309', glow: '#fbbf24' },
-    { name: 'Glacial Cyan', main: '#06b6d4', light: '#a5f3fc', dark: '#0e7490', glow: '#22d3ee' },
-    { name: 'Sapphire Blue', main: '#3b82f6', light: '#bfdbfe', dark: '#1d4ed8', glow: '#60a5fa' },
-    { name: 'Amethyst Purple', main: '#a855f7', light: '#f3e8ff', dark: '#7e22ce', glow: '#c084fc' },
-    { name: 'Emerald Green', main: '#22c55e', light: '#bbf7d0', dark: '#15803d', glow: '#4ade80' },
-    { name: 'Ruby Red', main: '#ef4444', light: '#fecaca', dark: '#b91c1c', glow: '#f87171' }
+    { name: 'Amber Gold', main: '#f59e0b', light: '#fef08a', dark: '#b45309', ring: '#fbbf24' },
+    { name: 'Glacial Cyan', main: '#06b6d4', light: '#a5f3fc', dark: '#0e7490', ring: '#22d3ee' },
+    { name: 'Sapphire Blue', main: '#3b82f6', light: '#bfdbfe', dark: '#1d4ed8', ring: '#60a5fa' },
+    { name: 'Amethyst Purple', main: '#a855f7', light: '#f3e8ff', dark: '#7e22ce', ring: '#c084fc' },
+    { name: 'Emerald Green', main: '#22c55e', light: '#bbf7d0', dark: '#15803d', ring: '#4ade80' },
+    { name: 'Ruby Crimson', main: '#ef4444', light: '#fecaca', dark: '#b91c1c', ring: '#f87171' }
   ];
 
-  // Animated progression path traversal effect when advancing levels
+  // Full SVG path connecting all 40 levels in spiral order (in 1376x768 pixel space)
+  const fullPathD = useMemo(() => generateSplinePath(SAGA_SPIRAL_COORDS, TOTAL_PRIMARY_LEVELS), []);
+  // Completed portion of the path up to unlockedLevel
+  const completedPathD = useMemo(() => generateSplinePath(SAGA_SPIRAL_COORDS, unlockedLevel), [unlockedLevel]);
+  // Stepping stones between waypoints
+  const steppingStones = useMemo(() => getSteppingStones(SAGA_SPIRAL_COORDS), []);
+
+  // Center on active level node
+  const scrollToActiveNode = (smooth = true) => {
+    setTimeout(() => {
+      const activeNode = document.getElementById(`saga-level-node-${unlockedLevel}`);
+      if (activeNode) {
+        activeNode.scrollIntoView({
+          behavior: smooth ? 'smooth' : 'auto',
+          block: 'center',
+          inline: 'center'
+        });
+      }
+    }, 120);
+  };
+
+  // Traversal animation when unlocking a new level
   useEffect(() => {
     if (isOpen) {
       const storedLastLevel = parseInt(localStorage.getItem('bba_last_seen_saga_level') || '0', 10);
-      
-      // If user unlocked a new level (e.g. was 1, now 2)
+
       if (storedLastLevel > 0 && unlockedLevel > storedLastLevel && unlockedLevel <= TOTAL_PRIMARY_LEVELS) {
         setAvatarLevel(storedLastLevel);
         setIsTraveling(true);
         setTravelProgress(0);
 
         let startTime = null;
-        const duration = 1400; // 1.4s hop traversal across stepping stones
+        const duration = 1500;
 
         const step = (timestamp) => {
           if (!startTime) startTime = timestamp;
@@ -75,7 +98,6 @@ export default function LevelSelectModal({
           if (p < 1) {
             requestAnimationFrame(step);
           } else {
-            // Arrived at the newly unlocked level!
             setAvatarLevel(unlockedLevel);
             setIsTraveling(false);
             audioManager.playStarSound(3);
@@ -88,12 +110,13 @@ export default function LevelSelectModal({
             });
 
             localStorage.setItem('bba_last_seen_saga_level', unlockedLevel.toString());
+            scrollToActiveNode(true);
           }
         };
 
         const timer = setTimeout(() => {
           requestAnimationFrame(step);
-        }, 350);
+        }, 300);
 
         return () => clearTimeout(timer);
       } else {
@@ -101,18 +124,8 @@ export default function LevelSelectModal({
         setIsTraveling(false);
         setTravelProgress(1);
         localStorage.setItem('bba_last_seen_saga_level', unlockedLevel.toString());
+        scrollToActiveNode(false);
       }
-
-      // Auto-scroll to active level node in the saga path
-      setTimeout(() => {
-        const activeNode = document.getElementById(`saga-level-node-${unlockedLevel}`);
-        if (activeNode) {
-          activeNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-          const container = document.getElementById('saga-map-scroll-container');
-          if (container) container.scrollTop = container.scrollHeight;
-        }
-      }, 150);
     }
   }, [isOpen, unlockedLevel]);
 
@@ -129,85 +142,124 @@ export default function LevelSelectModal({
     onClose();
   };
 
+  // Coordinates for the traveling avatar in 1376x768 space
+  const startPt = SAGA_SPIRAL_COORDS[avatarLevel - 1] || SAGA_SPIRAL_COORDS[0];
+  const targetPt = SAGA_SPIRAL_COORDS[unlockedLevel - 1] || startPt;
+  const startX = (startPt.x / 100) * 1376;
+  const startY = (startPt.y / 100) * 768;
+  const targetX = (targetPt.x / 100) * 1376;
+  const targetY = (targetPt.y / 100) * 768;
+
+  const avatarX = isTraveling ? startX + (targetX - startX) * travelProgress : startX;
+  const avatarY = isTraveling ? startY + (targetY - startY) * travelProgress : startY;
+  const avatarHop = isTraveling ? Math.sin(travelProgress * Math.PI) * 28 : 0;
+
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 80,
-        backgroundColor: '#0c2448',
+        backgroundColor: '#0a192f',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        userSelect: 'none'
       }}
     >
-      {/* 1. Mythical Aerial Sky-Valley & Glacial River Background */}
+      <style>{`
+        @keyframes pulseRing {
+          0%, 100% {
+            r: 25;
+            stroke-opacity: 0.9;
+            stroke-width: 3.5;
+          }
+          50% {
+            r: 29;
+            stroke-opacity: 0.4;
+            stroke-width: 4.5;
+          }
+        }
+        @keyframes mascotBob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes shrineBeacon {
+          0%, 100% {
+            opacity: 0.7;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.05);
+          }
+        }
+        .saga-svg-node {
+          cursor: pointer;
+          transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .saga-svg-node:hover {
+          transform: scale(1.18);
+        }
+        .saga-svg-node:active {
+          transform: scale(0.96);
+        }
+      `}</style>
+
+      {/* 1. Aerial Sky Atmospheric Gradients */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: "url('/assets/saga_map_bg.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top',
-          backgroundRepeat: 'no-repeat',
+          background: 'radial-gradient(ellipse at 50% 20%, #1e3a8a 0%, #0c1b33 60%, #050b14 100%)',
           zIndex: 1
         }}
       />
 
-      {/* Atmospheric Cloud Mist & Soft Depth Gradients */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(180deg, rgba(12, 36, 72, 0.45) 0%, rgba(12, 36, 72, 0.1) 40%, rgba(12, 36, 72, 0.35) 100%)',
-          pointerEvents: 'none',
-          zIndex: 2
-        }}
-      />
-
-      {/* 2. Top Header Bar (Screenshot 3 Layout) */}
-      <div
+      {/* 2. Top Header Bar */}
+      <header
         style={{
           position: 'relative',
-          zIndex: 25,
+          zIndex: 30,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0.65rem 1rem',
-          background: 'linear-gradient(180deg, rgba(7, 22, 44, 0.88) 0%, rgba(7, 22, 44, 0) 100%)',
-          backdropFilter: 'blur(8px)'
+          padding: '0.65rem 1.2rem',
+          background: 'linear-gradient(180deg, rgba(7, 22, 44, 0.95) 0%, rgba(7, 22, 44, 0.75) 80%, rgba(7, 22, 44, 0) 100%)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
         }}
       >
-        {/* Left: Hearts / Lives System (❤️ 5) + Stars Earned */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          {/* Hearts Capsule */}
+        {/* Left: Lives (5) + Stars */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Lives Capsule */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
+              gap: '0.4rem',
               background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
               border: '2px solid #334155',
               borderRadius: '9999px',
-              padding: '0.25rem 0.65rem 0.25rem 0.35rem',
-              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5)'
+              padding: '0.25rem 0.7rem 0.25rem 0.4rem',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)'
             }}
           >
             <div
               style={{
-                width: '24px',
-                height: '24px',
+                width: '26px',
+                height: '26px',
                 borderRadius: '50%',
-                background: '#ef4444',
+                background: 'linear-gradient(135deg, #f87171 0%, #dc2626 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 8px rgba(239, 68, 68, 0.8)'
+                boxShadow: '0 0 10px rgba(239, 68, 68, 0.8)'
               }}
             >
               <Heart size={14} fill="#ffffff" color="#ffffff" />
             </div>
-            <span style={{ color: '#f8fafc', fontWeight: 800, fontSize: '0.9rem' }}>5</span>
+            <span style={{ color: '#f8fafc', fontWeight: 800, fontSize: '0.95rem' }}>5</span>
           </div>
 
           {/* Total Stars Pill */}
@@ -215,52 +267,88 @@ export default function LevelSelectModal({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
+              gap: '0.4rem',
               background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
               border: '2px solid #334155',
               borderRadius: '9999px',
-              padding: '0.25rem 0.65rem 0.25rem 0.35rem',
-              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5)'
+              padding: '0.25rem 0.75rem 0.25rem 0.4rem',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)'
             }}
           >
             <div
               style={{
-                width: '24px',
-                height: '24px',
+                width: '26px',
+                height: '26px',
                 borderRadius: '50%',
-                background: '#fbbf24',
+                background: 'linear-gradient(135deg, #fde047 0%, #d97706 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 8px rgba(251, 191, 36, 0.8)'
+                boxShadow: '0 0 10px rgba(251, 191, 36, 0.8)'
               }}
             >
               <Star size={14} fill="#ffffff" color="#ffffff" />
             </div>
-            <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '0.9rem' }}>{totalStarsEarned}</span>
+            <span style={{ color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{totalStarsEarned}</span>
           </div>
         </div>
 
-        {/* Center: Realm Title */}
+        {/* Center: Realm Title Banner */}
         <div style={{ textAlign: 'center' }}>
           <div
             style={{
-              fontSize: '1.05rem',
+              fontSize: '1.25rem',
               fontWeight: 900,
               color: '#fef08a',
-              letterSpacing: '0.5px',
-              textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(245, 158, 11, 0.5)'
+              letterSpacing: '0.8px',
+              textShadow: '0 2px 6px rgba(0,0,0,0.9), 0 0 12px rgba(245, 158, 11, 0.7)',
+              fontFamily: 'Fredoka, Outfit, sans-serif'
             }}
           >
             DRAGON ISLES SAGA
           </div>
-          <div style={{ fontSize: '0.72rem', color: '#cbd5e1', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
-            Levels 1 - 40
+          <div
+            style={{
+              fontSize: '0.75rem',
+              color: '#93c5fd',
+              fontWeight: 700,
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+              letterSpacing: '0.4px'
+            }}
+          >
+            Spiral Trail to the Sacred Dragon Shrine
           </div>
         </div>
 
-        {/* Right: Controls (Unlock All dev cheat + Close button) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {/* Right: View Toggle, Cheat & Close */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+          {/* Fit vs Zoom View Toggle */}
+          <button
+            onClick={() => {
+              audioManager.playButtonClick();
+              setIsFitScreen(!isFitScreen);
+              if (!isFitScreen) scrollToActiveNode(true);
+            }}
+            title={isFitScreen ? 'Zoom In & Pan Map' : 'Fit Whole Map to Screen'}
+            style={{
+              background: 'rgba(30, 41, 59, 0.8)',
+              border: '1.5px solid #475569',
+              borderRadius: '9999px',
+              color: '#94a3b8',
+              padding: '0.35rem 0.65rem',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            {isFitScreen ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
+            <span style={{ display: 'none', md: 'inline' }}>{isFitScreen ? 'Zoom' : 'Fit'}</span>
+          </button>
+
+          {/* Dev Cheat Button: Unlock 40 */}
           {onUnlockAll && unlockedLevel < TOTAL_PRIMARY_LEVELS && (
             <button
               onClick={() => {
@@ -269,27 +357,29 @@ export default function LevelSelectModal({
               }}
               style={{
                 background: 'rgba(56, 189, 248, 0.2)',
-                border: '1px solid rgba(56, 189, 248, 0.5)',
+                border: '1.5px solid rgba(56, 189, 248, 0.6)',
                 borderRadius: '9999px',
                 color: '#38bdf8',
-                padding: '0.2rem 0.55rem',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                cursor: 'pointer'
+                padding: '0.35rem 0.7rem',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                boxShadow: '0 0 10px rgba(56, 189, 248, 0.3)'
               }}
             >
               Unlock 40
             </button>
           )}
 
+          {/* Close Button */}
           <button
             onClick={() => {
               audioManager.playButtonClick();
               onClose();
             }}
             style={{
-              width: '34px',
-              height: '34px',
+              width: '36px',
+              height: '36px',
               borderRadius: '50%',
               background: 'linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)',
               border: '2px solid #fca5a5',
@@ -298,419 +388,547 @@ export default function LevelSelectModal({
               justifyContent: 'center',
               color: '#ffffff',
               cursor: 'pointer',
-              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5)'
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)'
             }}
           >
             <X size={18} strokeWidth={2.5} />
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* 3. Scrollable Saga Map Winding Island Road */}
+      {/* 3. SPIRAL SAGA MAP SCROLLABLE VIEWPORT */}
       <div
+        ref={scrollContainerRef}
         id="saga-map-scroll-container"
         style={{
           flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
+          overflow: 'auto',
           position: 'relative',
           zIndex: 10,
-          padding: '2rem 1rem 5rem 1rem',
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
+          alignItems: isFitScreen ? 'center' : 'flex-start',
+          justifyContent: isFitScreen ? 'center' : 'flex-start',
+          padding: isFitScreen ? '0.5rem' : '2rem',
+          WebkitOverflowScrolling: 'touch'
         }}
       >
+        {/* Responsive Interactive SVG Canvas */}
         <div
+          id="saga-map-canvas"
           style={{
-            width: '100%',
-            maxWidth: '420px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative'
+            position: 'relative',
+            width: isFitScreen ? 'min(100%, calc((100vh - 75px) * 1.79))' : '1376px',
+            minWidth: isFitScreen ? 'auto' : '1376px',
+            aspectRatio: '1376 / 768',
+            height: isFitScreen ? 'auto' : '768px',
+            borderRadius: '1.2rem',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.85)',
+            overflow: 'hidden',
+            margin: 'auto'
           }}
         >
-          {/* Top Summit Shrine (Level 40 Dragon Altar Goal from Screenshot 4) */}
-          <div
-            style={{
-              width: '300px',
-              height: '160px',
-              position: 'relative',
-              marginBottom: '3rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            {/* Ancient Sky-Altar 3D Floating Island Artwork */}
-            <svg width="300" height="160" viewBox="0 0 300 160" style={{ position: 'absolute', inset: 0 }}>
-              <defs>
-                <linearGradient id="shrineCrag" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#9a5d30" />
-                  <stop offset="45%" stopColor="#693716" />
-                  <stop offset="100%" stopColor="#2a1204" />
-                </linearGradient>
-                <linearGradient id="shrineGrass" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#86efac" />
-                  <stop offset="40%" stopColor="#4ade80" />
-                  <stop offset="100%" stopColor="#15803d" />
-                </linearGradient>
-              </defs>
-
-              {/* Island Spire Base Crag */}
-              <polygon points="30,85 270,85 210,145 150,158 90,145" fill="url(#shrineCrag)" filter="drop-shadow(0 15px 20px rgba(0,0,0,0.6))" />
-              {/* Craggy facets */}
-              <polygon points="150,85 270,85 210,145 150,158" fill="rgba(0,0,0,0.22)" />
-              <polygon points="30,85 150,85 150,158 90,145" fill="rgba(255,255,255,0.08)" />
-
-              {/* Island Grassy Plateau */}
-              <ellipse cx="150" cy="85" rx="120" ry="32" fill="url(#shrineGrass)" stroke="#166534" strokeWidth="2" />
-              {/* Stone temple ring */}
-              <ellipse cx="150" cy="82" rx="90" ry="24" fill="#334155" stroke="#64748b" strokeWidth="2" />
-              <ellipse cx="150" cy="80" rx="35" ry="14" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="2" />
-
-              {/* Golden Dragon Totem Pillars */}
-              <g transform="translate(210, 40) scale(0.7)">
-                <rect x="0" y="10" width="22" height="42" fill="#cbd5e1" rx="4" />
-                <polygon points="11,0 24,12 -2,12" fill="#fbbf24" stroke="#d97706" />
-                <ellipse cx="11" cy="24" rx="4" ry="4" fill="#38bdf8" />
-              </g>
-
-              <g transform="translate(68, 40) scale(0.7)">
-                <rect x="0" y="10" width="22" height="42" fill="#cbd5e1" rx="4" />
-                <polygon points="11,0 24,12 -2,12" fill="#fbbf24" stroke="#d97706" />
-                <ellipse cx="11" cy="24" rx="4" ry="4" fill="#38bdf8" />
-              </g>
-
-              {/* The Sacred Glowing Dragon Egg */}
-              <g transform="translate(135, 36)">
-                <ellipse cx="15" cy="24" rx="16" ry="22" fill="#ffffff" stroke="#cbd5e1" strokeWidth="2" filter="drop-shadow(0 0 14px rgba(56, 189, 248, 0.9))" />
-                <ellipse cx="15" cy="26" rx="6" ry="5" fill="#38bdf8" />
-                <ellipse cx="11" cy="20" rx="2.5" ry="2.5" fill="#38bdf8" />
-                <ellipse cx="15" cy="18" rx="2.5" ry="2.5" fill="#38bdf8" />
-                <ellipse cx="19" cy="20" rx="2.5" ry="2.5" fill="#38bdf8" />
-              </g>
-
-              {/* Floating Golden Quest Keys */}
-              <g transform="translate(90, 95) rotate(-22) scale(0.75)">
-                <polygon points="12,4 20,12 12,20 4,12" fill="#fbbf24" filter="drop-shadow(0 0 10px #f59e0b)" />
-                <rect x="18" y="10" width="18" height="4" fill="#f59e0b" />
-                <rect x="30" y="14" width="4" height="4" fill="#f59e0b" />
-              </g>
-
-              <g transform="translate(180, 95) rotate(22) scale(0.75)">
-                <polygon points="12,4 20,12 12,20 4,12" fill="#fbbf24" filter="drop-shadow(0 0 10px #f59e0b)" />
-                <rect x="18" y="10" width="18" height="4" fill="#f59e0b" />
-                <rect x="30" y="14" width="4" height="4" fill="#f59e0b" />
-              </g>
-            </svg>
-
-            <span
-              style={{
-                position: 'absolute',
-                bottom: '8px',
-                color: '#fef08a',
-                fontWeight: 900,
-                fontSize: '0.85rem',
-                textShadow: '0 2px 4px rgba(0,0,0,0.9), 0 0 8px rgba(245, 158, 11, 0.7)',
-                letterSpacing: '0.8px'
-              }}
-            >
-              DRAGON SHRINE SUMMIT
-            </span>
-          </div>
-
-          {/* Stepping Stones Path leading down from Level 40 down to Level 1 */}
-          <div
+          <svg
+            viewBox="0 0 1376 768"
             style={{
               width: '100%',
-              display: 'flex',
-              flexDirection: 'column-reverse',
-              alignItems: 'center',
-              gap: '2.8rem',
-              position: 'relative'
+              height: '100%',
+              display: 'block'
             }}
           >
-            {levels.map((lvl) => {
+            <defs>
+              {/* Filter: Golden Trail Glow */}
+              <filter id="goldenPathGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              {/* Filter: Node Active Halo Glow */}
+              <filter id="activeHaloGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              {/* Filter: 3D Drop Shadow */}
+              <filter id="medallionShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="5" stdDeviation="4" floodColor="#000000" floodOpacity="0.65" />
+              </filter>
+
+              {/* Golden Path Gradient */}
+              <linearGradient id="sagaGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#fef08a" />
+                <stop offset="50%" stopColor="#fbbf24" />
+                <stop offset="100%" stopColor="#f59e0b" />
+              </linearGradient>
+
+              {/* Stardust Sparkle Gradient */}
+              <radialGradient id="stardustMote" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                <stop offset="45%" stopColor="#fbbf24" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+              </radialGradient>
+
+              {/* Theme Gradients for 3D Gemstones */}
+              {RUNE_THEMES.map((th, i) => (
+                <radialGradient key={`themeGrad-${i}`} id={`gemGrad-${i}`} cx="38%" cy="32%" r="65%">
+                  <stop offset="0%" stopColor={th.light} />
+                  <stop offset="55%" stopColor={th.main} />
+                  <stop offset="100%" stopColor={th.dark} />
+                </radialGradient>
+              ))}
+
+              {/* Locked Slate Stone Gradient */}
+              <linearGradient id="lockedSlateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#64748b" />
+                <stop offset="100%" stopColor="#1e293b" />
+              </linearGradient>
+
+              {/* Gloss Highlight Crescent */}
+              <linearGradient id="glossHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              </linearGradient>
+
+              {/* Star Shape Symbol */}
+              <g id="miniStarIcon">
+                <polygon
+                  points="0,-5.5 1.7,-1.8 5.7,-1.8 2.5,0.7 3.7,4.8 0,2.3 -3.7,4.8 -2.5,0.7 -5.7,-1.8 -1.7,-1.8"
+                  strokeWidth="0.6"
+                />
+              </g>
+
+              {/* Milestone Golden Crown Symbol */}
+              <g id="milestoneCrown">
+                <path
+                  d="M -11,-16 L -13,-24 L -6,-19 L 0,-26 L 6,-19 L 13,-24 L 11,-16 Z"
+                  fill="#fbbf24"
+                  stroke="#b45309"
+                  strokeWidth="1.2"
+                  filter="drop-shadow(0 2px 3px rgba(0,0,0,0.7))"
+                />
+                <circle cx="-13" cy="-24" r="1.5" fill="#fef08a" />
+                <circle cx="0" cy="-26" r="1.8" fill="#fef08a" />
+                <circle cx="13" cy="-24" r="1.5" fill="#fef08a" />
+              </g>
+            </defs>
+
+            {/* Background Floating Sky Island Artwork (saga_map_spiral.jpg) */}
+            <image
+              href="/assets/saga_map_spiral.jpg"
+              x="0"
+              y="0"
+              width="1376"
+              height="768"
+              preserveAspectRatio="xMidYMid slice"
+            />
+
+            {/* Ambient Darkened Edge Vignette */}
+            <rect
+              width="1376"
+              height="768"
+              fill="none"
+              stroke="rgba(10, 25, 47, 0.4)"
+              strokeWidth="12"
+              pointerEvents="none"
+            />
+
+            {/* 1. Underlying Base Stone Path (All 40 levels in spiral) */}
+            <path
+              d={fullPathD}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.38)"
+              strokeWidth="5"
+              strokeDasharray="10 8"
+              strokeLinecap="round"
+            />
+
+            {/* 2. Completed / Radiant Stardust Trail (Levels 1 to Unlocked) */}
+            {unlockedLevel > 1 && (
+              <>
+                <path
+                  d={completedPathD}
+                  fill="none"
+                  stroke="rgba(251, 191, 36, 0.6)"
+                  strokeWidth="13"
+                  filter="url(#goldenPathGlow)"
+                  strokeLinecap="round"
+                />
+                <path
+                  d={completedPathD}
+                  fill="none"
+                  stroke="url(#sagaGoldGrad)"
+                  strokeWidth="5.5"
+                  strokeLinecap="round"
+                />
+              </>
+            )}
+
+            {/* 3. Stepping Stone Pebbles Along Spiral Segments */}
+            {steppingStones.map((st, idx) => {
+              const isSegmentActive = st.segment < unlockedLevel;
+              return (
+                <g key={`step-${idx}`}>
+                  {/* Pebble Shadow */}
+                  <ellipse cx={st.x} cy={st.y + 3} rx="6.5" ry="3.5" fill="rgba(0, 0, 0, 0.35)" />
+                  {/* Pebble Body */}
+                  <circle
+                    cx={st.x}
+                    cy={st.y}
+                    r={isSegmentActive ? 5 : 4}
+                    fill={isSegmentActive ? '#fef08a' : '#cbd5e1'}
+                    stroke={isSegmentActive ? '#d97706' : '#64748b'}
+                    strokeWidth="1.2"
+                    filter={isSegmentActive ? 'url(#goldenPathGlow)' : 'none'}
+                  />
+                  {/* Fairy Sparkle Mote on Completed Segments */}
+                  {isSegmentActive && (
+                    <circle cx={st.x} cy={st.y} r="8" fill="url(#stardustMote)" opacity="0.8" />
+                  )}
+                </g>
+              );
+            })}
+
+            {/* 4. Level Medallions (1 through 39) */}
+            {SAGA_SPIRAL_COORDS.map((node) => {
+              const lvl = node.level;
+              if (lvl === 40) return null; // Rendered as Grand Shrine below
+
+              const pxX = (node.x / 100) * 1376;
+              const pxY = (node.y / 100) * 768;
               const isUnlocked = lvl <= unlockedLevel;
+              const isCompleted = lvl < unlockedLevel;
               const isCurrent = lvl === (isTraveling ? avatarLevel : unlockedLevel);
               const stars = starsMap[lvl] || 0;
-
-              // Sinusoidal winding path X-offset (-75px to +75px)
-              const xOffset = Math.sin(lvl * 1.1) * 75;
-              const nextXOffset = lvl < TOTAL_PRIMARY_LEVELS ? Math.sin((lvl + 1) * 1.1) * 75 : 0;
-              const dx = nextXOffset - xOffset;
-              const theme = RUNE_THEMES[(lvl - 1) % RUNE_THEMES.length];
-
-              // Bezier intermediate coordinates for 3 floating stepping pebbles
-              const p1x = 0.156 * dx;
-              const p1y = -30;
-              const p2x = 0.5 * dx;
-              const p2y = -52;
-              const p3x = 0.844 * dx;
-              const p3y = -74;
+              const themeIndex = (lvl - 1) % RUNE_THEMES.length;
+              const theme = RUNE_THEMES[themeIndex];
 
               return (
-                <div
-                  key={lvl}
+                <g
+                  key={`lvl-node-${lvl}`}
                   id={`saga-level-node-${lvl}`}
-                  style={{
-                    transform: `translateX(${xOffset}px)`,
-                    position: 'relative',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: isUnlocked ? 'pointer' : 'not-allowed',
-                    transition: 'transform 0.2s ease',
-                    zIndex: 5
-                  }}
+                  className="saga-svg-node"
+                  transform={`translate(${pxX}, ${pxY})`}
+                  style={{ transformOrigin: `${pxX}px ${pxY}px` }}
                   onClick={() => {
                     if (isUnlocked) handleNodeClick(lvl);
                   }}
                 >
-                  {/* Floating Stepping Stones & Fairy Dust Energy Trail connecting to level above */}
-                  {lvl < TOTAL_PRIMARY_LEVELS && (
-                    <svg
-                      style={{
-                        position: 'absolute',
-                        top: '25px', // center of this pedestal rune disc
-                        left: '42px', // center of this pedestal (width 84 / 2)
-                        overflow: 'visible',
-                        pointerEvents: 'none',
-                        zIndex: -1
-                      }}
-                    >
-                      {/* Shimmering Starlight Fairy Dust Thread */}
-                      <path
-                        d={`M 0 0 C 0 -52, ${dx} -52, ${dx} -105`}
-                        fill="none"
-                        stroke={lvl < unlockedLevel ? 'rgba(251, 191, 36, 0.45)' : 'rgba(255, 255, 255, 0.18)'}
-                        strokeWidth="2.5"
-                        strokeDasharray={lvl < unlockedLevel ? '4 5' : '3 6'}
-                        className={lvl < unlockedLevel ? 'saga-path-active' : ''}
-                        filter={lvl < unlockedLevel ? 'drop-shadow(0 0 6px #fbbf24)' : 'none'}
-                      />
-
-                      {/* Floating Stepping Pebble 1 (at t = 0.25) */}
-                      <g transform={`translate(${p1x}, ${p1y})`}>
-                        <ellipse cx="0" cy="3" rx="7" ry="3" fill="rgba(2, 6, 23, 0.35)" filter="blur(2px)" />
-                        <ellipse cx="0" cy="1" rx="6.5" ry="4.5" fill="#784724" />
-                        <ellipse cx="0" cy="0" rx="6" ry="3.8" fill={lvl < unlockedLevel ? '#4ade80' : '#475569'} stroke="#22c55e" strokeWidth="0.8" />
-                        {lvl < unlockedLevel && (
-                          <circle cx="0" cy="0" r="1.5" fill="#fef08a" filter="drop-shadow(0 0 3px #fbbf24)" />
-                        )}
-                      </g>
-
-                      {/* Floating Stepping Pebble 2 (at t = 0.50) */}
-                      <g transform={`translate(${p2x}, ${p2y})`}>
-                        <ellipse cx="0" cy="3" rx="8" ry="3.5" fill="rgba(2, 6, 23, 0.35)" filter="blur(2px)" />
-                        <ellipse cx="0" cy="1" rx="7.5" ry="5" fill="#693716" />
-                        <ellipse cx="0" cy="0" rx="7" ry="4" fill={lvl < unlockedLevel ? '#22c55e' : '#334155'} stroke="#16a34a" strokeWidth="0.8" />
-                        {lvl < unlockedLevel && (
-                          <circle cx="0" cy="0" r="1.8" fill="#fef08a" filter="drop-shadow(0 0 4px #fbbf24)" />
-                        )}
-                      </g>
-
-                      {/* Floating Stepping Pebble 3 (at t = 0.75) */}
-                      <g transform={`translate(${p3x}, ${p3y})`}>
-                        <ellipse cx="0" cy="3" rx="7" ry="3" fill="rgba(2, 6, 23, 0.35)" filter="blur(2px)" />
-                        <ellipse cx="0" cy="1" rx="6.5" ry="4.5" fill="#784724" />
-                        <ellipse cx="0" cy="0" rx="6" ry="3.8" fill={lvl < unlockedLevel ? '#4ade80' : '#475569'} stroke="#22c55e" strokeWidth="0.8" />
-                        {lvl < unlockedLevel && (
-                          <circle cx="0" cy="0" r="1.5" fill="#fef08a" filter="drop-shadow(0 0 3px #fbbf24)" />
-                        )}
-                      </g>
-                    </svg>
-                  )}
-
-                  {/* Player Mascot 3D Avatar Pin standing on active level! */}
+                  {/* Active Level Glowing Pulsing Halo */}
                   {isCurrent && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '-54px',
-                        zIndex: 15,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        animation: isTraveling ? 'none' : 'bounceGuide 1.8s ease-in-out infinite',
-                        transform: isTraveling
-                          ? `translate(${travelProgress * dx}px, ${-travelProgress * 105 - Math.abs(Math.sin(travelProgress * Math.PI * 3)) * 18}px)`
-                          : 'none',
-                        transition: isTraveling ? 'none' : 'transform 0.3s ease'
-                      }}
-                    >
-                      {/* Avatar Pin Card with Glowing Gold Border */}
-                      <div
-                        style={{
-                          width: '46px',
-                          height: '46px',
-                          background: 'linear-gradient(135deg, #fef08a 0%, #f59e0b 100%)',
-                          borderRadius: '0.75rem',
-                          border: '2.5px solid #ffffff',
-                          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(245, 158, 11, 0.85)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <img
-                          src="/assets/dino_mascot.png"
-                          alt="Baby Dino"
-                          style={{
-                            width: '42px',
-                            height: '42px',
-                            objectFit: 'contain',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))'
-                          }}
-                        />
-                      </div>
-                      {/* Downward triangle pin pointer */}
-                      <div
-                        style={{
-                          width: 0,
-                          height: 0,
-                          borderLeft: '7px solid transparent',
-                          borderRight: '7px solid transparent',
-                          borderTop: '9px solid #ffffff',
-                          marginTop: '-1px'
-                        }}
-                      />
-                    </div>
+                    <circle
+                      r="26"
+                      fill="none"
+                      stroke="#fbbf24"
+                      strokeWidth="3.5"
+                      filter="url(#activeHaloGlow)"
+                      style={{ animation: 'pulseRing 1.8s infinite ease-in-out' }}
+                    />
                   )}
 
-                  {/* 3 Golden Stars Hovering over Completed Pedestal */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      position: 'absolute',
-                      top: '-20px',
-                      zIndex: 8
-                    }}
-                  >
-                    {[1, 2, 3].map((starNum) => (
-                      <Star
-                        key={starNum}
-                        size={16}
-                        fill={stars >= starNum ? '#fbbf24' : '#334155'}
-                        color={stars >= starNum ? '#fef08a' : '#1e293b'}
-                        strokeWidth={1.5}
-                        style={{
-                          filter: stars >= starNum ? 'drop-shadow(0 0 5px #f59e0b)' : 'none',
-                          transform: starNum === 2 ? 'translateY(-2px)' : 'none'
-                        }}
-                      />
-                    ))}
-                  </div>
+                  {/* 3D Drop Shadow & Pedestal Base */}
+                  <circle r="22" fill="rgba(0, 0, 0, 0.45)" cy="3" filter="url(#medallionShadow)" />
 
-                  {/* The 3D Floating Mountain Crag Island Pedestal (Screenshot 4 Layout) */}
-                  <div
-                    className={isCurrent && !isTraveling ? 'pulse-glow' : ''}
-                    style={{
-                      width: '84px',
-                      height: '76px',
-                      position: 'relative',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      filter: 'drop-shadow(0 12px 14px rgba(0, 0, 0, 0.65))'
-                    }}
-                  >
-                    <svg width="84" height="76" viewBox="0 0 84 76">
-                      <defs>
-                        {/* Shaded Earthen Mountain Crag Gradients */}
-                        <linearGradient id={`cragLeft_${lvl}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#b47b42" />
-                          <stop offset="70%" stopColor="#8d5727" />
-                          <stop offset="100%" stopColor="#5c3413" />
-                        </linearGradient>
-                        <linearGradient id={`cragRight_${lvl}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#693716" />
-                          <stop offset="60%" stopColor="#432109" />
-                          <stop offset="100%" stopColor="#251003" />
-                        </linearGradient>
-                        {/* Colored Gemstone Rune Disc Gradient */}
-                        <radialGradient id={`runeDisc_${lvl}`} cx="40%" cy="35%" r="65%">
-                          <stop offset="0%" stopColor={isUnlocked ? theme.light : '#64748b'} />
-                          <stop offset="60%" stopColor={isUnlocked ? theme.main : '#334155'} />
-                          <stop offset="100%" stopColor={isUnlocked ? theme.dark : '#1e293b'} />
-                        </radialGradient>
-                      </defs>
+                  {/* Outer Beveled Ring Frame */}
+                  <circle
+                    r="20"
+                    fill={isUnlocked ? (isCompleted ? '#fef08a' : theme.ring) : '#475569'}
+                    stroke={isUnlocked ? (isCompleted ? '#b45309' : '#0f172a') : '#334155'}
+                    strokeWidth="2.5"
+                  />
 
-                      {/* 1. Soft Island Drop Shadow */}
-                      <ellipse cx="42" cy="73" rx="24" ry="3.5" fill="rgba(0,0,0,0.4)" filter="blur(2px)" />
+                  {/* Inner Gemstone Disc Face */}
+                  <circle
+                    r="17"
+                    fill={isUnlocked ? `url(#gemGrad-${themeIndex})` : 'url(#lockedSlateGrad)'}
+                  />
 
-                      {/* 2. 3D Floating Rock Spire Crags */}
-                      {/* Left Sunlit Rock Facet */}
-                      <polygon points="10,28 42,28 42,70 20,52" fill={`url(#cragLeft_${lvl})`} />
-                      {/* Right Shaded Rock Facet */}
-                      <polygon points="42,28 74,28 64,52 42,70" fill={`url(#cragRight_${lvl})`} />
-                      {/* Center Rock Ridge Shading */}
-                      <polygon points="36,28 46,28 44,68 40,68" fill="rgba(0,0,0,0.2)" />
+                  {/* Gloss Highlight Crescent */}
+                  <ellipse
+                    cx="0"
+                    cy="-6"
+                    rx="12"
+                    ry="6"
+                    fill="url(#glossHighlight)"
+                    pointerEvents="none"
+                  />
 
-                      {/* 3. Carved Stone / Sandstone Plateau Rim */}
-                      <ellipse cx="42" cy="28" rx="36" ry="16" fill="#8c5828" stroke="#4a2608" strokeWidth="1.5" />
-                      {/* Grassy / Sandstone Collar */}
-                      <ellipse cx="42" cy="27" rx="34" ry="14" fill="#a16833" />
-                      <ellipse cx="42" cy="25" rx="31" ry="12" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.5" />
+                  {/* Milestone Golden Crown for Levels 5, 10, 15, 20, 25, 30, 35 */}
+                  {node.isMilestone && <use href="#milestoneCrown" />}
 
-                      {/* 4. Raised Gemstone Rune Medallion Disc */}
-                      <ellipse cx="42" cy="24" rx="26" ry="11" fill={`url(#runeDisc_${lvl})`} stroke="#ffffff" strokeWidth={isCurrent ? '2.5' : '1.5'} />
-                      {/* Inner 3D Glass Bevel Ring */}
-                      <ellipse cx="42" cy="23" rx="22" ry="9" fill="none" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1.2" />
-
-                      {/* Embossed Dragon Paw Stamp Mark */}
-                      {isUnlocked && (
-                        <g transform="translate(42, 23) scale(0.65)" opacity="0.38">
-                          <ellipse cx="0" cy="4" rx="7" ry="5" fill="#ffffff" />
-                          <circle cx="-5" cy="-4" r="2.5" fill="#ffffff" />
-                          <circle cx="0" cy="-6" r="2.8" fill="#ffffff" />
-                          <circle cx="5" cy="-4" r="2.5" fill="#ffffff" />
-                        </g>
-                      )}
-                    </svg>
-
-                    {/* Pedestal Level Number or Lock Icon */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 2
-                      }}
+                  {/* Level Number or Lock Icon */}
+                  {isUnlocked ? (
+                    <text
+                      x="0"
+                      y="1"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="#ffffff"
+                      fontSize="14"
+                      fontWeight="900"
+                      fontFamily="Fredoka, Outfit, sans-serif"
+                      stroke="#0f172a"
+                      strokeWidth="0.8"
+                      paintOrder="stroke"
+                      filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))"
                     >
-                      {isUnlocked ? (
-                        <span
-                          style={{
-                            color: '#ffffff',
-                            fontWeight: 900,
-                            fontSize: '1.3rem',
-                            textShadow: '0 2px 4px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.7)',
-                            fontFamily: 'Fredoka, Outfit, sans-serif'
-                          }}
-                        >
-                          {lvl}
-                        </span>
-                      ) : (
-                        <Lock size={19} color="#94a3b8" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.8))" />
-                      )}
-                    </div>
-                  </div>
-                </div>
+                      {lvl}
+                    </text>
+                  ) : (
+                    /* Padlock SVG graphic */
+                    <g transform="translate(-6, -6)">
+                      <rect x="2" y="5" width="8" height="6.5" rx="1.5" fill="#94a3b8" stroke="#334155" strokeWidth="0.8" />
+                      <path d="M 3.5,5 L 3.5,3 A 2.5,2.5 0 0,1 8.5,3 L 8.5,5" fill="none" stroke="#94a3b8" strokeWidth="1.2" />
+                    </g>
+                  )}
+
+                  {/* Completed Stars Arc Resting on Top/Bottom of Medallion */}
+                  {isCompleted && (
+                    <g transform="translate(0, 22)">
+                      {/* Dark Star Plaque Pill */}
+                      <rect
+                        x="-19"
+                        y="-6"
+                        width="38"
+                        height="12"
+                        rx="6"
+                        fill="rgba(15, 23, 42, 0.88)"
+                        stroke="#fbbf24"
+                        strokeWidth="0.8"
+                      />
+                      {/* Star 1 */}
+                      <use
+                        href="#miniStarIcon"
+                        x="-11"
+                        y="0"
+                        fill={stars >= 1 ? '#fbbf24' : '#475569'}
+                        stroke={stars >= 1 ? '#d97706' : '#1e293b'}
+                      />
+                      {/* Star 2 (Center) */}
+                      <use
+                        href="#miniStarIcon"
+                        x="0"
+                        y="-1.5"
+                        fill={stars >= 2 ? '#fbbf24' : '#475569'}
+                        stroke={stars >= 2 ? '#d97706' : '#1e293b'}
+                      />
+                      {/* Star 3 */}
+                      <use
+                        href="#miniStarIcon"
+                        x="11"
+                        y="0"
+                        fill={stars >= 3 ? '#fbbf24' : '#475569'}
+                        stroke={stars >= 3 ? '#d97706' : '#1e293b'}
+                      />
+                    </g>
+                  )}
+                </g>
               );
             })}
-          </div>
+
+            {/* 5. Level 40: Grand Sacred Dragon Shrine Summit */}
+            {(() => {
+              const shrinePt = SAGA_SPIRAL_COORDS[39];
+              const sx = (shrinePt.x / 100) * 1376;
+              const sy = (shrinePt.y / 100) * 768;
+              const isUnlocked = 40 <= unlockedLevel;
+              const isCurrent = 40 === (isTraveling ? avatarLevel : unlockedLevel);
+              const stars = starsMap[40] || 0;
+
+              return (
+                <g
+                  id="saga-level-node-40"
+                  className="saga-svg-node"
+                  transform={`translate(${sx}, ${sy})`}
+                  style={{ transformOrigin: `${sx}px ${sy}px` }}
+                  onClick={() => {
+                    if (isUnlocked) handleNodeClick(40);
+                  }}
+                >
+                  {/* Radiant Altar Aura */}
+                  <circle
+                    r="42"
+                    fill="url(#stardustMote)"
+                    opacity="0.85"
+                    style={{ animation: 'shrineBeacon 2.5s infinite ease-in-out' }}
+                  />
+
+                  {/* Active Level Glowing Halo */}
+                  {isCurrent && (
+                    <circle
+                      r="38"
+                      fill="none"
+                      stroke="#fbbf24"
+                      strokeWidth="4"
+                      filter="url(#activeHaloGlow)"
+                      style={{ animation: 'pulseRing 1.8s infinite ease-in-out' }}
+                    />
+                  )}
+
+                  {/* Outer Golden Temple Base Disc */}
+                  <circle
+                    r="32"
+                    fill="url(#gemGrad-0)"
+                    stroke="#ffffff"
+                    strokeWidth="3.5"
+                    filter="url(#medallionShadow)"
+                  />
+
+                  {/* Glowing Ancient Dragon Egg in Shrine Altar */}
+                  <ellipse
+                    cx="0"
+                    cy="0"
+                    rx="16"
+                    ry="21"
+                    fill="url(#gemGrad-1)"
+                    stroke="#0284c7"
+                    strokeWidth="2"
+                  />
+                  {/* Egg Shell Specular Highlights */}
+                  <ellipse cx="-4" cy="-7" rx="5" ry="8" fill="#ffffff" opacity="0.6" />
+
+                  {/* Dragon Shrine Number 40 */}
+                  <text
+                    x="0"
+                    y="3"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#0369a1"
+                    fontSize="16"
+                    fontWeight="900"
+                    fontFamily="Fredoka, Outfit, sans-serif"
+                    stroke="#ffffff"
+                    strokeWidth="1"
+                    paintOrder="stroke"
+                    filter="drop-shadow(0 1px 2px rgba(255,255,255,0.8))"
+                  >
+                    40
+                  </text>
+
+                  {/* "DRAGON SHRINE" Title Ribbon Beneath Altar */}
+                  <g transform="translate(0, 36)">
+                    <rect
+                      x="-48"
+                      y="-9"
+                      width="96"
+                      height="18"
+                      rx="7"
+                      fill="linear-gradient(180deg, #0f172a 0%, #07162c 100%)"
+                      stroke="#fbbf24"
+                      strokeWidth="1.5"
+                      filter="drop-shadow(0 3px 6px rgba(0,0,0,0.8))"
+                    />
+                    <text
+                      x="0"
+                      y="1"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="#fef08a"
+                      fontSize="9.5"
+                      fontWeight="900"
+                      letterSpacing="0.6"
+                      fontFamily="Fredoka, Outfit, sans-serif"
+                    >
+                      DRAGON SHRINE
+                    </text>
+                  </g>
+
+                  {/* Completed Stars on Level 40 */}
+                  {stars > 0 && (
+                    <g transform="translate(0, 52)">
+                      <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#0f172a" stroke="#fbbf24" strokeWidth="1" />
+                      <use href="#miniStarIcon" x="-14" y="0" fill={stars >= 1 ? '#fbbf24' : '#475569'} stroke="#d97706" />
+                      <use href="#miniStarIcon" x="0" y="-1.5" fill={stars >= 2 ? '#fbbf24' : '#475569'} stroke="#d97706" />
+                      <use href="#miniStarIcon" x="14" y="0" fill={stars >= 3 ? '#fbbf24' : '#475569'} stroke="#d97706" />
+                    </g>
+                  )}
+                </g>
+              );
+            })()}
+
+            {/* 6. Dynamic 3D Baby Dino Mascot Avatar Pin */}
+            <g
+              transform={`translate(${avatarX}, ${avatarY - avatarHop})`}
+              pointerEvents="none"
+              style={{ transition: isTraveling ? 'none' : 'transform 0.3s ease' }}
+            >
+              <g style={{ animation: isTraveling ? 'none' : 'mascotBob 1.8s infinite ease-in-out' }}>
+                {/* Speech Pointer Triangle */}
+                <polygon
+                  points="0,-20 -6,-30 6,-30"
+                  fill="#ffffff"
+                  filter="drop-shadow(0 2px 2px rgba(0,0,0,0.5))"
+                />
+
+                {/* Avatar Portrait Disc */}
+                <circle
+                  cx="0"
+                  cy="-50"
+                  r="23"
+                  fill="url(#sagaGoldGrad)"
+                  stroke="#ffffff"
+                  strokeWidth="3"
+                  filter="url(#activeHaloGlow)"
+                />
+
+                {/* Mascot Image */}
+                <image
+                  href="/assets/dino_mascot.png"
+                  x="-20"
+                  y="-70"
+                  width="40"
+                  height="40"
+                  preserveAspectRatio="xMidYMid meet"
+                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.4))"
+                />
+              </g>
+            </g>
+          </svg>
         </div>
       </div>
 
-      {/* 4. Stage Preview Modal on Tap (Section 32) */}
+      {/* 4. Bottom Quick-Action Toolbar: Locate Active Level Compass */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '1.2rem',
+          right: '1.2rem',
+          zIndex: 35
+        }}
+      >
+        <button
+          onClick={() => {
+            audioManager.playButtonClick();
+            scrollToActiveNode(true);
+          }}
+          title="Locate Current Level"
+          style={{
+            background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+            border: '2px solid #7dd3fc',
+            borderRadius: '9999px',
+            color: '#ffffff',
+            padding: '0.5rem 1rem',
+            fontSize: '0.85rem',
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            boxShadow: '0 6px 18px rgba(2, 132, 199, 0.6), 0 4px 10px rgba(0,0,0,0.5)',
+            fontFamily: 'Fredoka, Outfit, sans-serif'
+          }}
+        >
+          <Compass size={17} />
+          <span>Level {unlockedLevel}</span>
+        </button>
+      </div>
+
+      {/* 5. Stage Preview Modal on Tap (Section 32) */}
       {previewLevel && (
         <StagePreviewModal
           isOpen={!!previewLevel}
