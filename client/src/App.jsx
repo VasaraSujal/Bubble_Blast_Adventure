@@ -172,6 +172,16 @@ export default function App() {
     }
   };
 
+  const handleGoHome = () => {
+    audioManager.playButtonClick();
+    setIsPauseOpen(false);
+    setIsLevelSelectOpen(false);
+    setIsLevelFailedOpen(false);
+    setIsLevelCompleteOpen(false);
+    setIsSettingsOpen(false);
+    navigateTo('/');
+  };
+
   // Sync profile and handle browser routing on mount
   useEffect(() => {
     async function syncProfile() {
@@ -561,6 +571,7 @@ export default function App() {
             audioManager.playButtonClick();
             setIsLevelSelectOpen(true);
           }}
+          onGoHome={handleGoHome}
         />
       ) : (
         <header className="glass-panel app-header">
@@ -1276,6 +1287,7 @@ export default function App() {
           setHighestUnlockedLevel(TOTAL_PRIMARY_LEVELS);
         }}
         onClose={() => closeModal(setIsLevelSelectOpen)}
+        onGoHome={handleGoHome}
       />
 
       {/* Daily Challenge Modal (Section 74 - Bonus) */}
@@ -1319,6 +1331,7 @@ export default function App() {
           setIsLevelCompleteOpen(false);
           navigateTo('/levels');
         }}
+        onGoHome={handleGoHome}
       />
 
       <LevelFailedModal
@@ -1338,6 +1351,7 @@ export default function App() {
           setIsLevelFailedOpen(false);
           navigateTo('/levels');
         }}
+        onGoHome={handleGoHome}
       />
 
       <PauseModal
@@ -1356,6 +1370,7 @@ export default function App() {
           setIsPauseOpen(false);
           navigateTo('/levels');
         }}
+        onGoHome={handleGoHome}
       />
 
       {/* Settings Modal (Section 58, 59, 89) */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import confetti from 'canvas-confetti';
-import { Heart, Star, X, Compass, Maximize2, Minimize2 } from 'lucide-react';
+import { Heart, Star, X, Compass, Maximize2, Minimize2, Home } from 'lucide-react';
 import { TOTAL_PRIMARY_LEVELS, getLevelDefinition } from '../../data/levels/levelRegistry';
 import { audioManager } from '../../utils/audioManager';
 import StagePreviewModal from '../Modals/StagePreviewModal';
@@ -23,7 +23,8 @@ export default function LevelSelectModal({
   completedLevels = [],
   onSelectLevel,
   onUnlockAll,
-  onClose
+  onClose,
+  onGoHome
 }) {
   const [previewLevel, setPreviewLevel] = useState(null);
   const [avatarLevel, setAvatarLevel] = useState(unlockedLevel);
@@ -374,12 +375,39 @@ export default function LevelSelectModal({
             </button>
           )}
 
+          {/* Home Button */}
+          {onGoHome && (
+            <button
+              onClick={() => {
+                audioManager.playButtonClick();
+                onGoHome();
+              }}
+              title="Return to Home Screen"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)',
+                border: '2px solid #7dd3fc',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ffffff',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.5)'
+              }}
+            >
+              <Home size={18} />
+            </button>
+          )}
+
           {/* Close Button */}
           <button
             onClick={() => {
               audioManager.playButtonClick();
               onClose();
             }}
+            title="Close Saga Map"
             style={{
               width: '36px',
               height: '36px',
