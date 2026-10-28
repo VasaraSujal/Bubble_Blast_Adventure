@@ -194,15 +194,18 @@ export default function LevelSelectModal({
             transform: scale(1.05);
           }
         }
-        .saga-svg-node {
+        .saga-svg-node-inner {
           cursor: pointer;
-          transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transform-box: fill-box;
+          transform-origin: center;
+          transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.18s ease;
         }
-        .saga-svg-node:hover {
-          transform: scale(1.18);
+        .saga-svg-node-inner:hover {
+          transform: scale(1.14);
+          filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.9));
         }
-        .saga-svg-node:active {
-          transform: scale(0.96);
+        .saga-svg-node-inner:active {
+          transform: scale(0.95);
         }
       `}</style>
 
@@ -612,121 +615,123 @@ export default function LevelSelectModal({
                 <g
                   key={`lvl-node-${lvl}`}
                   id={`saga-level-node-${lvl}`}
-                  className="saga-svg-node"
                   transform={`translate(${pxX}, ${pxY})`}
-                  style={{ transformOrigin: `${pxX}px ${pxY}px` }}
-                  onClick={() => {
-                    if (isUnlocked) handleNodeClick(lvl);
-                  }}
                 >
-                  {/* Active Level Glowing Pulsing Halo */}
-                  {isCurrent && (
-                    <circle
-                      r="26"
-                      fill="none"
-                      stroke="#fbbf24"
-                      strokeWidth="3.5"
-                      filter="url(#activeHaloGlow)"
-                      style={{ animation: 'pulseRing 1.8s infinite ease-in-out' }}
-                    />
-                  )}
-
-                  {/* 3D Drop Shadow & Pedestal Base */}
-                  <circle r="22" fill="rgba(0, 0, 0, 0.45)" cy="3" filter="url(#medallionShadow)" />
-
-                  {/* Outer Beveled Ring Frame */}
-                  <circle
-                    r="20"
-                    fill={isUnlocked ? (isCompleted ? '#fef08a' : theme.ring) : '#475569'}
-                    stroke={isUnlocked ? (isCompleted ? '#b45309' : '#0f172a') : '#334155'}
-                    strokeWidth="2.5"
-                  />
-
-                  {/* Inner Gemstone Disc Face */}
-                  <circle
-                    r="17"
-                    fill={isUnlocked ? `url(#gemGrad-${themeIndex})` : 'url(#lockedSlateGrad)'}
-                  />
-
-                  {/* Gloss Highlight Crescent */}
-                  <ellipse
-                    cx="0"
-                    cy="-6"
-                    rx="12"
-                    ry="6"
-                    fill="url(#glossHighlight)"
-                    pointerEvents="none"
-                  />
-
-                  {/* Milestone Golden Crown for Levels 5, 10, 15, 20, 25, 30, 35 */}
-                  {node.isMilestone && <use href="#milestoneCrown" />}
-
-                  {/* Level Number or Lock Icon */}
-                  {isUnlocked ? (
-                    <text
-                      x="0"
-                      y="1"
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill="#ffffff"
-                      fontSize="14"
-                      fontWeight="900"
-                      fontFamily="Fredoka, Outfit, sans-serif"
-                      stroke="#0f172a"
-                      strokeWidth="0.8"
-                      paintOrder="stroke"
-                      filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))"
-                    >
-                      {lvl}
-                    </text>
-                  ) : (
-                    /* Padlock SVG graphic */
-                    <g transform="translate(-6, -6)">
-                      <rect x="2" y="5" width="8" height="6.5" rx="1.5" fill="#94a3b8" stroke="#334155" strokeWidth="0.8" />
-                      <path d="M 3.5,5 L 3.5,3 A 2.5,2.5 0 0,1 8.5,3 L 8.5,5" fill="none" stroke="#94a3b8" strokeWidth="1.2" />
-                    </g>
-                  )}
-
-                  {/* Completed Stars Arc Resting on Top/Bottom of Medallion */}
-                  {isCompleted && (
-                    <g transform="translate(0, 22)">
-                      {/* Dark Star Plaque Pill */}
-                      <rect
-                        x="-19"
-                        y="-6"
-                        width="38"
-                        height="12"
-                        rx="6"
-                        fill="rgba(15, 23, 42, 0.88)"
+                  <g
+                    className="saga-svg-node-inner"
+                    onClick={() => {
+                      if (isUnlocked) handleNodeClick(lvl);
+                    }}
+                  >
+                    {/* Active Level Glowing Pulsing Halo */}
+                    {isCurrent && (
+                      <circle
+                        r="26"
+                        fill="none"
                         stroke="#fbbf24"
-                        strokeWidth="0.8"
+                        strokeWidth="3.5"
+                        filter="url(#activeHaloGlow)"
+                        style={{ animation: 'pulseRing 1.8s infinite ease-in-out' }}
                       />
-                      {/* Star 1 */}
-                      <use
-                        href="#miniStarIcon"
-                        x="-11"
-                        y="0"
-                        fill={stars >= 1 ? '#fbbf24' : '#475569'}
-                        stroke={stars >= 1 ? '#d97706' : '#1e293b'}
-                      />
-                      {/* Star 2 (Center) */}
-                      <use
-                        href="#miniStarIcon"
+                    )}
+
+                    {/* 3D Drop Shadow & Pedestal Base */}
+                    <circle r="22" fill="rgba(0, 0, 0, 0.45)" cy="3" filter="url(#medallionShadow)" />
+
+                    {/* Outer Beveled Ring Frame */}
+                    <circle
+                      r="20"
+                      fill={isUnlocked ? (isCompleted ? '#fef08a' : theme.ring) : '#475569'}
+                      stroke={isUnlocked ? (isCompleted ? '#b45309' : '#0f172a') : '#334155'}
+                      strokeWidth="2.5"
+                    />
+
+                    {/* Inner Gemstone Disc Face */}
+                    <circle
+                      r="17"
+                      fill={isUnlocked ? `url(#gemGrad-${themeIndex})` : 'url(#lockedSlateGrad)'}
+                    />
+
+                    {/* Gloss Highlight Crescent */}
+                    <ellipse
+                      cx="0"
+                      cy="-6"
+                      rx="12"
+                      ry="6"
+                      fill="url(#glossHighlight)"
+                      pointerEvents="none"
+                    />
+
+                    {/* Milestone Golden Crown for Levels 5, 10, 15, 20, 25, 30, 35 */}
+                    {node.isMilestone && <use href="#milestoneCrown" />}
+
+                    {/* Level Number or Lock Icon */}
+                    {isUnlocked ? (
+                      <text
                         x="0"
-                        y="-1.5"
-                        fill={stars >= 2 ? '#fbbf24' : '#475569'}
-                        stroke={stars >= 2 ? '#d97706' : '#1e293b'}
-                      />
-                      {/* Star 3 */}
-                      <use
-                        href="#miniStarIcon"
-                        x="11"
-                        y="0"
-                        fill={stars >= 3 ? '#fbbf24' : '#475569'}
-                        stroke={stars >= 3 ? '#d97706' : '#1e293b'}
-                      />
-                    </g>
-                  )}
+                        y="1"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="#ffffff"
+                        fontSize="14"
+                        fontWeight="900"
+                        fontFamily="Fredoka, Outfit, sans-serif"
+                        stroke="#0f172a"
+                        strokeWidth="0.8"
+                        paintOrder="stroke"
+                        filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))"
+                      >
+                        {lvl}
+                      </text>
+                    ) : (
+                      /* Padlock SVG graphic */
+                      <g transform="translate(-6, -6)">
+                        <rect x="2" y="5" width="8" height="6.5" rx="1.5" fill="#94a3b8" stroke="#334155" strokeWidth="0.8" />
+                        <path d="M 3.5,5 L 3.5,3 A 2.5,2.5 0 0,1 8.5,3 L 8.5,5" fill="none" stroke="#94a3b8" strokeWidth="1.2" />
+                      </g>
+                    )}
+
+                    {/* Completed Stars Arc Resting on Top/Bottom of Medallion */}
+                    {isCompleted && (
+                      <g transform="translate(0, 22)">
+                        {/* Dark Star Plaque Pill */}
+                        <rect
+                          x="-19"
+                          y="-6"
+                          width="38"
+                          height="12"
+                          rx="6"
+                          fill="rgba(15, 23, 42, 0.88)"
+                          stroke="#fbbf24"
+                          strokeWidth="0.8"
+                        />
+                        {/* Star 1 */}
+                        <use
+                          href="#miniStarIcon"
+                          x="-11"
+                          y="0"
+                          fill={stars >= 1 ? '#fbbf24' : '#475569'}
+                          stroke={stars >= 1 ? '#d97706' : '#1e293b'}
+                        />
+                        {/* Star 2 (Center) */}
+                        <use
+                          href="#miniStarIcon"
+                          x="0"
+                          y="-1.5"
+                          fill={stars >= 2 ? '#fbbf24' : '#475569'}
+                          stroke={stars >= 2 ? '#d97706' : '#1e293b'}
+                        />
+                        {/* Star 3 */}
+                        <use
+                          href="#miniStarIcon"
+                          x="11"
+                          y="0"
+                          fill={stars >= 3 ? '#fbbf24' : '#475569'}
+                          stroke={stars >= 3 ? '#d97706' : '#1e293b'}
+                        />
+                      </g>
+                    )}
+                  </g>
                 </g>
               );
             })}
@@ -743,110 +748,112 @@ export default function LevelSelectModal({
               return (
                 <g
                   id="saga-level-node-40"
-                  className="saga-svg-node"
                   transform={`translate(${sx}, ${sy})`}
-                  style={{ transformOrigin: `${sx}px ${sy}px` }}
-                  onClick={() => {
-                    if (isUnlocked) handleNodeClick(40);
-                  }}
                 >
-                  {/* Radiant Altar Aura */}
-                  <circle
-                    r="42"
-                    fill="url(#stardustMote)"
-                    opacity="0.85"
-                    style={{ animation: 'shrineBeacon 2.5s infinite ease-in-out' }}
-                  />
-
-                  {/* Active Level Glowing Halo */}
-                  {isCurrent && (
-                    <circle
-                      r="38"
-                      fill="none"
-                      stroke="#fbbf24"
-                      strokeWidth="4"
-                      filter="url(#activeHaloGlow)"
-                      style={{ animation: 'pulseRing 1.8s infinite ease-in-out' }}
-                    />
-                  )}
-
-                  {/* Outer Golden Temple Base Disc */}
-                  <circle
-                    r="32"
-                    fill="url(#gemGrad-0)"
-                    stroke="#ffffff"
-                    strokeWidth="3.5"
-                    filter="url(#medallionShadow)"
-                  />
-
-                  {/* Glowing Ancient Dragon Egg in Shrine Altar */}
-                  <ellipse
-                    cx="0"
-                    cy="0"
-                    rx="16"
-                    ry="21"
-                    fill="url(#gemGrad-1)"
-                    stroke="#0284c7"
-                    strokeWidth="2"
-                  />
-                  {/* Egg Shell Specular Highlights */}
-                  <ellipse cx="-4" cy="-7" rx="5" ry="8" fill="#ffffff" opacity="0.6" />
-
-                  {/* Dragon Shrine Number 40 */}
-                  <text
-                    x="0"
-                    y="3"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#0369a1"
-                    fontSize="16"
-                    fontWeight="900"
-                    fontFamily="Fredoka, Outfit, sans-serif"
-                    stroke="#ffffff"
-                    strokeWidth="1"
-                    paintOrder="stroke"
-                    filter="drop-shadow(0 1px 2px rgba(255,255,255,0.8))"
+                  <g
+                    className="saga-svg-node-inner"
+                    onClick={() => {
+                      if (isUnlocked) handleNodeClick(40);
+                    }}
                   >
-                    40
-                  </text>
-
-                  {/* "DRAGON SHRINE" Title Ribbon Beneath Altar */}
-                  <g transform="translate(0, 36)">
-                    <rect
-                      x="-48"
-                      y="-9"
-                      width="96"
-                      height="18"
-                      rx="7"
-                      fill="linear-gradient(180deg, #0f172a 0%, #07162c 100%)"
-                      stroke="#fbbf24"
-                      strokeWidth="1.5"
-                      filter="drop-shadow(0 3px 6px rgba(0,0,0,0.8))"
+                    {/* Radiant Altar Aura */}
+                    <circle
+                      r="42"
+                      fill="url(#stardustMote)"
+                      opacity="0.85"
+                      style={{ animation: 'shrineBeacon 2.5s infinite ease-in-out' }}
                     />
+
+                    {/* Active Level Glowing Halo */}
+                    {isCurrent && (
+                      <circle
+                        r="38"
+                        fill="none"
+                        stroke="#fbbf24"
+                        strokeWidth="4"
+                        filter="url(#activeHaloGlow)"
+                        style={{ animation: 'pulseRing 1.8s infinite ease-in-out' }}
+                      />
+                    )}
+
+                    {/* Outer Golden Temple Base Disc */}
+                    <circle
+                      r="32"
+                      fill="url(#gemGrad-0)"
+                      stroke="#ffffff"
+                      strokeWidth="3.5"
+                      filter="url(#medallionShadow)"
+                    />
+
+                    {/* Glowing Ancient Dragon Egg in Shrine Altar */}
+                    <ellipse
+                      cx="0"
+                      cy="0"
+                      rx="16"
+                      ry="21"
+                      fill="url(#gemGrad-1)"
+                      stroke="#0284c7"
+                      strokeWidth="2"
+                    />
+                    {/* Egg Shell Specular Highlights */}
+                    <ellipse cx="-4" cy="-7" rx="5" ry="8" fill="#ffffff" opacity="0.6" />
+
+                    {/* Dragon Shrine Number 40 */}
                     <text
                       x="0"
-                      y="1"
+                      y="3"
                       textAnchor="middle"
                       dominantBaseline="middle"
-                      fill="#fef08a"
-                      fontSize="9.5"
+                      fill="#0369a1"
+                      fontSize="16"
                       fontWeight="900"
-                      letterSpacing="0.6"
                       fontFamily="Fredoka, Outfit, sans-serif"
+                      stroke="#ffffff"
+                      strokeWidth="1"
+                      paintOrder="stroke"
+                      filter="drop-shadow(0 1px 2px rgba(255,255,255,0.8))"
                     >
-                      DRAGON SHRINE
+                      40
                     </text>
-                  </g>
 
-                  {/* Completed Stars on Level 40 */}
-                  {stars > 0 && (
-                    <g transform="translate(0, 52)">
-                      <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#0f172a" stroke="#fbbf24" strokeWidth="1" />
-                      <use href="#miniStarIcon" x="-14" y="0" fill={stars >= 1 ? '#fbbf24' : '#475569'} stroke="#d97706" />
-                      <use href="#miniStarIcon" x="0" y="-1.5" fill={stars >= 2 ? '#fbbf24' : '#475569'} stroke="#d97706" />
-                      <use href="#miniStarIcon" x="14" y="0" fill={stars >= 3 ? '#fbbf24' : '#475569'} stroke="#d97706" />
+                    {/* "DRAGON SHRINE" Title Ribbon Beneath Altar */}
+                    <g transform="translate(0, 36)">
+                      <rect
+                        x="-48"
+                        y="-9"
+                        width="96"
+                        height="18"
+                        rx="7"
+                        fill="linear-gradient(180deg, #0f172a 0%, #07162c 100%)"
+                        stroke="#fbbf24"
+                        strokeWidth="1.5"
+                        filter="drop-shadow(0 3px 6px rgba(0,0,0,0.8))"
+                      />
+                      <text
+                        x="0"
+                        y="1"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="#fef08a"
+                        fontSize="9.5"
+                        fontWeight="900"
+                        letterSpacing="0.6"
+                        fontFamily="Fredoka, Outfit, sans-serif"
+                      >
+                        DRAGON SHRINE
+                      </text>
                     </g>
-                  )}
+
+                    {/* Completed Stars on Level 40 */}
+                    {stars > 0 && (
+                      <g transform="translate(0, 52)">
+                        <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#0f172a" stroke="#fbbf24" strokeWidth="1" />
+                        <use href="#miniStarIcon" x="-14" y="0" fill={stars >= 1 ? '#fbbf24' : '#475569'} stroke="#d97706" />
+                        <use href="#miniStarIcon" x="0" y="-1.5" fill={stars >= 2 ? '#fbbf24' : '#475569'} stroke="#d97706" />
+                        <use href="#miniStarIcon" x="14" y="0" fill={stars >= 3 ? '#fbbf24' : '#475569'} stroke="#d97706" />
+                      </g>
+                    )}
+                  </g>
                 </g>
               );
             })()}
